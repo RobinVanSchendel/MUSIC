@@ -118,6 +118,7 @@ public class DemultiplexMarcoLargeScreenSingleFile {
 			int hitPosition = 0;
 			
 			String outDirString = R1.getAbsolutePath().replace("_R1_001.fastq.gz", "");
+			//alternative name
 			outDirString = outDirString.replace("_R1.fastq.gz", "");
 			File outDir = new File(outDirString);
 			if(!outDir.exists()) {
