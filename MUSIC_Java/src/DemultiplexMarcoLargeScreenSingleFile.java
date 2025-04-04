@@ -38,7 +38,6 @@ public class DemultiplexMarcoLargeScreenSingleFile {
 			String fileString = args[0];
 			R1 = new File(fileString);
 			R2 = new File(args[1]);
-			barcodeFile = new File(args[2]);
 			if(!R1.exists()) {
 				System.err.println("file "+R1.getAbsolutePath()+" does not exist");
 				System.exit(0);
