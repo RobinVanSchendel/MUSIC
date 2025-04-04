@@ -11,7 +11,7 @@ import java.util.Scanner;
 public class createFastqFilesPrimaryScreen {
 	
 	public static final String LEFTSEQ = "AACTTGCTATGCTGTTTCCAGCATAGCTCTTAAAC";
-	public static final String RIGHTSEQ = "GGTGTTTCGTCCTTTCCACAAGATATATAAAGCCAAGAAATCGAAATACTTTCAAGTTACGGTAAGCATATGATAGTCCATTTTAAAACATAATTT";
+	public static final String RIGHTSEQ = "CGGTGTTTCGTCCTTTCCACAAGATATATAAAGCCAAGAAATCGAAATACTTTCAAGTTACGGTAAGCATATGATAGTCCATTTTAAAACATAATTT";
 
 	public static void main(String[] args) {
 		File f = new File(args[1]);
@@ -103,7 +103,7 @@ public class createFastqFilesPrimaryScreen {
 						//System.out.println("replaced X by N");
 				}
 				for(int i=0;i<counts;i++) {
-					String tempId = ID+":"+(i+1)+" BC:"+parts[barcodeC];
+					String tempId = ID+":"+(i+1);
 					String bqStr = getBaseQuality(seq, bq);
 					String barcodeSeq = getBarcodeSeq(parts[barcodeC], barcodeToSeq);
 					writeFastq(R1w,seq, tempId, bqStr);
