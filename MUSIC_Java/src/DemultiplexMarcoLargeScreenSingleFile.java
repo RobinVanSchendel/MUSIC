@@ -6,14 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.zip.GZIPOutputStream;
 
@@ -32,7 +25,7 @@ public class DemultiplexMarcoLargeScreenSingleFile {
 	public static void main(String[] args) {
 		File R1 = null;				
 		File R2 = null;
-		//hardcoded
+		//hardcoded barcodeFile
 		File barcodeFile = new File("yusa_orig.txt");
 		if(args.length==2) {
 			String fileString = args[0];
@@ -87,11 +80,8 @@ public class DemultiplexMarcoLargeScreenSingleFile {
 		
 		boolean outputR2 = false;
 		
-		//HashMap<String, String> barcodes = createHashMap("104596_barcodes_MB.txt");
-		int binSize = 500;
 		HashMap<String, String> barcodes = createHashMap(barcodeFile);
 		HashMap<String, String> sgRNAToBins = createHashMapSGRNAs(barcodeFile);
-		int counter = 0;
 		
 		try {
 			HashMap<String, FastqWriter> hmWriterR1 = new HashMap<String, FastqWriter>();
@@ -221,7 +211,7 @@ public class DemultiplexMarcoLargeScreenSingleFile {
 				
 				nr++;
 				if(nr%100000==0) {
-					System.out.println("Already processed "+nr+" records");
+					System.out.println("Already processed "+nr+" records, found sgRNA for "+hit+" sequences");
 				}
 			}
 			System.out.println(R1.getName()+"\thit "+hit+" hit position "+hitPosition+" non-hit: "+nonhit+" not-sgRNAsurround: "+notFoundSG);

@@ -214,7 +214,7 @@ public class DemultiplexMarcoSubScreen {
 				
 				nr++;
 				if(nr%100000==0) {
-					System.out.println("Already processed "+nr+" records");
+					System.out.println("Already processed "+nr+" records, found sgRNA for "+hit+" sequences");
 					//break;
 				}
 			}
