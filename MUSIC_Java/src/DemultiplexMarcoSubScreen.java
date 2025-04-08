@@ -6,14 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.zip.GZIPOutputStream;
 
@@ -91,10 +84,8 @@ public class DemultiplexMarcoSubScreen {
 		boolean outputR2 = false;
 		
 		//HashMap<String, String> barcodes = createHashMap("104596_barcodes_MB.txt");
-		int binSize = 500;
 		HashMap<String, String> barcodes = createHashMap(barcodeFile);
 		HashMap<String, String> sgRNAToBins = createHashMapSGRNAs(barcodeFile);
-		int counter = 0;
 		
 		try {
 			HashMap<String, FastqWriter> hmWriterR1 = new HashMap<String, FastqWriter>();
