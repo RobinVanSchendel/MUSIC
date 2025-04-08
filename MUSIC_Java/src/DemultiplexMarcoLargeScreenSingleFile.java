@@ -68,6 +68,10 @@ public class DemultiplexMarcoLargeScreenSingleFile {
 		if(error) {
 			System.exit(0);
 		}
+		else {
+			System.out.println("Starting demulitplexing MUSIC screen with files "+R1.getName()+" and "+R2.getName());
+			System.out.println("Using barcode file "+barcodeFile.getName());
+		}
 		
 		String endOfBarCodeString = "ggtgtttcgtccttt".toUpperCase();
 		String startOfBarCodeString = "gcatagctcttaaac".toUpperCase();

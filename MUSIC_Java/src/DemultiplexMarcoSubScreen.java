@@ -25,7 +25,8 @@ public class DemultiplexMarcoSubScreen {
 	public static void main(String[] args) {
 		File R1 = null;				
 		File R2 = null;
-		File barcodeFile = null;
+		//hardcoded
+		File barcodeFile = new File("oPool_Custom_for_split.txt");;
 		if(args.length==4) {
 			String fileString = args[0];
 			R1 = new File(fileString);
@@ -45,14 +46,8 @@ public class DemultiplexMarcoSubScreen {
 			}
 		}
 		else {
-			System.out.println("Run as java -jar xx.jar <fastqR1> <fastqR2> <barcodefile>");
-			//R1 = new File("E:\\temp\\Repair_Seq\\SRR15164729_1.fastq.gz");
-			//R2 = new File("E:\\temp\\Repair_Seq\\SRR15164729_2.fastq.gz");
-			//barcodeFile = new File("E:\\temp\\Repair_Seq\\JoostLiu.txt");
-			R1 = new File("Z:\\Datasets - NGS, UV_TMP, MMP\\Targeted Sequencing\\Hartwig\\GenomeScan105639Marco\\Raw\\H2Y7CDSX7_105639-001-001_GCCTTATA-ACCTGAAC_L003_R1.fastq.gz");
-			R2 = new File("Z:\\Datasets - NGS, UV_TMP, MMP\\Targeted Sequencing\\Hartwig\\GenomeScan105639Marco\\Raw\\H2Y7CDSX7_105639-001-001_GCCTTATA-ACCTGAAC_L003_R2.fastq.gz");
-			barcodeFile = new File("oPool_Custom_for_split.txt");
-			//System.exit(0);
+			System.out.println("Run as java -jar xx.jar <fastqR1> <fastqR2>");
+			System.exit(0);
 		}
 		boolean error = false;
 		if(!R1.exists()) {
@@ -70,6 +65,10 @@ public class DemultiplexMarcoSubScreen {
 		//quit if there is an error
 		if(error) {
 			System.exit(0);
+		}
+		else {
+			System.out.println("Starting demulitplexing MUSIC subscreen with files "+R1.getName()+" and "+R2.getName());
+			System.out.println("Using barcode file "+barcodeFile.getName());
 		}
 		
 		String endOfBarCodeString = "ggtgtttcgtccttt".toUpperCase();
