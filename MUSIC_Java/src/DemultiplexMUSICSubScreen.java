@@ -19,14 +19,14 @@ import org.jcvi.jillion.trace.fastq.FastqRecord;
 import org.jcvi.jillion.trace.fastq.FastqWriter;
 import org.jcvi.jillion.trace.fastq.FastqWriterBuilder;
 
-public class DemultiplexMarcoLargeScreenSingleFile {
+public class DemultiplexMUSICSubScreen {
 	public static String unmatchedTriplet = "XXX";
 
 	public static void main(String[] args) {
 		File R1 = null;				
 		File R2 = null;
-		//hardcoded barcodeFile
-		File barcodeFile = new File("yusa_orig.txt");
+		//hardcoded
+		File barcodeFile = new File("oPool_Custom_for_split.txt");;
 		if(args.length==2) {
 			String fileString = args[0];
 			R1 = new File(fileString);
@@ -46,9 +46,6 @@ public class DemultiplexMarcoLargeScreenSingleFile {
 		}
 		else {
 			System.out.println("Run as java -jar xx.jar <fastqR1> <fastqR2>");
-			//R1 = new File("E:\\temp\\Repair_Seq\\SRR15164729_1.fastq.gz");
-			//R2 = new File("E:\\temp\\Repair_Seq\\SRR15164729_2.fastq.gz");
-			//barcodeFile = new File("E:\\temp\\Repair_Seq\\JoostLiu.txt");
 			System.exit(0);
 		}
 		boolean error = false;
@@ -69,7 +66,7 @@ public class DemultiplexMarcoLargeScreenSingleFile {
 			System.exit(0);
 		}
 		else {
-			System.out.println("Starting demulitplexing MUSIC screen with files "+R1.getName()+" and "+R2.getName());
+			System.out.println("Starting demulitplexing MUSIC subscreen with files "+R1.getName()+" and "+R2.getName());
 			System.out.println("Using barcode file "+barcodeFile.getName());
 		}
 		
@@ -84,6 +81,7 @@ public class DemultiplexMarcoLargeScreenSingleFile {
 		
 		boolean outputR2 = false;
 		
+		//HashMap<String, String> barcodes = createHashMap("104596_barcodes_MB.txt");
 		HashMap<String, String> barcodes = createHashMap(barcodeFile);
 		HashMap<String, String> sgRNAToBins = createHashMapSGRNAs(barcodeFile);
 		
@@ -111,7 +109,6 @@ public class DemultiplexMarcoLargeScreenSingleFile {
 			int hitPosition = 0;
 			
 			String outDirString = R1.getAbsolutePath().replace("_R1_001.fastq.gz", "");
-			//alternative name
 			outDirString = outDirString.replace("_R1.fastq.gz", "");
 			File outDir = new File(outDirString);
 			if(!outDir.exists()) {
@@ -216,6 +213,7 @@ public class DemultiplexMarcoLargeScreenSingleFile {
 				nr++;
 				if(nr%100000==0) {
 					System.out.println("Already processed "+nr+" records, found sgRNA for "+hit+" sequences");
+					//break;
 				}
 			}
 			System.out.println(R1.getName()+"\thit "+hit+" hit position "+hitPosition+" non-hit: "+nonhit+" not-sgRNAsurround: "+notFoundSG);
@@ -271,7 +269,7 @@ public class DemultiplexMarcoLargeScreenSingleFile {
 
 	private static HashMap<String, String> createHashMap(File f) {
 		HashMap<String, String> hm = new HashMap<String, String>();
-		System.out.println("Taking column 2 and 1 for barcode and ID");
+		System.out.println("Taking column 2 and 3 for barcode and ID");
 		int idColumn = 2;
 		int sgColumn = 3;
 		boolean takeRevCom = true;
