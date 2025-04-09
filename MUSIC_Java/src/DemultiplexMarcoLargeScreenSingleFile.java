@@ -278,6 +278,10 @@ public class DemultiplexMarcoLargeScreenSingleFile {
 		boolean removeAAAC = false;
 		try {
 			Scanner s = new Scanner(f);
+			//skip first line
+			if(s.hasNextLine()) {
+				s.nextLine();
+			}
 			while(s.hasNextLine()) {
 				String line = s.nextLine();
 				String[] parts = line.split("\t");

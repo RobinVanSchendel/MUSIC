@@ -27,11 +27,10 @@ public class DemultiplexMarcoSubScreen {
 		File R2 = null;
 		//hardcoded
 		File barcodeFile = new File("oPool_Custom_for_split.txt");;
-		if(args.length==4) {
+		if(args.length==2) {
 			String fileString = args[0];
 			R1 = new File(fileString);
 			R2 = new File(args[1]);
-			barcodeFile = new File(args[2]);
 			if(!R1.exists()) {
 				System.err.println("file "+R1.getAbsolutePath()+" does not exist");
 				System.exit(0);
@@ -277,6 +276,10 @@ public class DemultiplexMarcoSubScreen {
 		boolean removeAAAC = false;
 		try {
 			Scanner s = new Scanner(f);
+			//skip first line
+			if(s.hasNextLine()) {
+				s.nextLine();
+			}
 			while(s.hasNextLine()) {
 				String line = s.nextLine();
 				String[] parts = line.split("\t");
