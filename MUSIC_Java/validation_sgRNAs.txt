@@ -1,0 +1,8 @@
+id	Gene	Barcode	Sequence	Oligo	In_Yusa	In_GeneHits	Gene
+	sghsWrn	sghsWrn-ex02	TGGAAACAACTGCACAGCAG				sghsWrn-ex02
+	sghsWrn	sghsWrn-ex05	TAGGAATTGAAGGAGATCAG				sghsWrn-ex05
+	sghsWrn	sghsWrn-ex09	CTAACATTGAGACTGAACTG				sghsWrn-ex09
+	sghsWrn	sghsWrn-ex19	GAAATGGCTGCAGATCCTGA				sghsWrn-ex19
+	sgmmNT	sgmmNT-1	GCGAGGTATTCGGCTCCGCG				mmNT-1
+	sgmmNT	sgmmNT-2	GTGCACCGGTACGGGCGACTC				mmNT-2
+	sgmmNT	sgmmNT-6	GTCTGCAATAGCAGCTAGCAT				hsLig4-2-JS
