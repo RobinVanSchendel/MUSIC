@@ -235,7 +235,7 @@ public class DemultiplexMUSICValidate {
 				}
 				//compress and delete
 				for(File f: fileList) {
-					System.out.println("Compressing "+f.getName());
+					System.out.println("Compressing "+f.getAbsolutePath());
 					compressGZIP(f);
 					f.delete();
 				}
