@@ -237,10 +237,8 @@ public class DemultiplexMUSICScreen {
 			}
 			
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (RuntimeException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -261,7 +259,6 @@ public class DemultiplexMUSICScreen {
 			}
 			s.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.exit(0);
 		}
@@ -300,7 +297,6 @@ public class DemultiplexMUSICScreen {
 			}
 			s.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.exit(0);
 		}
@@ -308,17 +304,6 @@ public class DemultiplexMUSICScreen {
 		return hm;
 	}
 
-	private static ArrayList<File> getGZFiles(File f) {
-		ArrayList<File> al = new ArrayList<File>();
-		if(f.isDirectory()) {
-			for(File file: f.listFiles()) {
-				if(file.getName().endsWith(".fastq.gz")) {
-					al.add(file);
-				}
-			}
-		}
-		return al;
-	}
 	public static void compressGZIP(File input) throws IOException {
 		File output = new File(input.getAbsolutePath()+".gz");
         try (GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(output))){
