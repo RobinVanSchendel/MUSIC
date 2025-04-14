@@ -3,10 +3,13 @@
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.zip.GZIPOutputStream;
 
 public class createFastqFilesPrimaryScreen {
 	
@@ -14,8 +17,8 @@ public class createFastqFilesPrimaryScreen {
 	public static final String RIGHTSEQ = "CGGTGTTTCGTCCTTTCCACAAGATATATAAAGCCAAGAAATCGAAATACTTTCAAGTTACGGTAAGCATATGATAGTCCATTTTAAAACATAATTT";
 
 	public static void main(String[] args) {
-		File f = new File(args[1]);
-		File lib = new File(args[2]);
+		File f = new File(args[0]);
+		File lib = new File(args[1]);
 		lib = new File("yusa_orig.txt");
 		HashMap<String, String> barcodeToSeq = null;
 		
@@ -28,8 +31,8 @@ public class createFastqFilesPrimaryScreen {
 		
 		//f = new File("Z:\\Datasets - NGS, UV_TMP, MMP\\Targeted Sequencing\\Hartwig\\LUMC-001-104-Marco_CRISPR_screen\\Raw\\Processed_Again\\MB01.txt");
 		int lastDot = f.getAbsolutePath().lastIndexOf(".");
-		String output = f.getAbsolutePath().substring(0, lastDot)+"_R1.fastq";
-		String outputR2 = f.getAbsolutePath().substring(0, lastDot)+"_R2.fastq";
+		String output = f.getAbsolutePath().substring(0, lastDot)+"_R1.fastq.gz";
+		String outputR2 = f.getAbsolutePath().substring(0, lastDot)+"_R2.fastq.gz";
 		File outputFR1 = new File(output);
 		File outputFR2 = new File(outputR2);
 		System.out.println("Input file "+f.getAbsolutePath());
@@ -65,8 +68,20 @@ public class createFastqFilesPrimaryScreen {
 	private static void createFastQFile(File in, File R1, File R2, HashMap<String, String> barcodeToSeq) {
 		try {
 			Scanner s = new Scanner(in);
-			BufferedWriter R1w = new BufferedWriter(new FileWriter(R1));
-			BufferedWriter R2w = new BufferedWriter(new FileWriter(R2));
+			
+
+			FileOutputStream fos = new FileOutputStream(R1);
+			GZIPOutputStream gos = new GZIPOutputStream(fos);
+			OutputStreamWriter osw = new OutputStreamWriter(gos);
+			
+			FileOutputStream fos2 = new FileOutputStream(R2);
+			GZIPOutputStream gos2 = new GZIPOutputStream(fos2);
+			OutputStreamWriter osw2 = new OutputStreamWriter(gos2);
+			
+
+			
+			BufferedWriter R1w = new BufferedWriter(osw);
+			BufferedWriter R2w = new BufferedWriter(osw2);
 			String header = s.nextLine();
 			String[] headers = header.split("\t");
 			int rawC = -1;
@@ -89,7 +104,6 @@ public class createFastqFilesPrimaryScreen {
 				}
 				//System.out.println(i+"\t"+headers[i]);
 			}
-			int totalReads = 0;
 			HashMap<Integer, String> bq = new HashMap<Integer, String>();
 			int lines = 0;
 			while(s.hasNextLine()) {
@@ -108,7 +122,6 @@ public class createFastqFilesPrimaryScreen {
 					String barcodeSeq = getBarcodeSeq(parts[barcodeC], barcodeToSeq);
 					writeFastq(R1w,seq, tempId, bqStr);
 					writeFastq(R2w,barcodeSeq, tempId, bqStr);
-					totalReads++;
 				}
 				lines++;
 				if(lines % 10000 == 0) {
@@ -117,6 +130,7 @@ public class createFastqFilesPrimaryScreen {
 			}
 			s.close();
 			R1w.close();
+			R2w.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
