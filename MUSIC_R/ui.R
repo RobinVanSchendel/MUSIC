@@ -52,7 +52,7 @@ fluidPage(
                    condition = "input.tabs == 'XY'",
                    pickerInput(
                      inputId = "XYX", 
-                     label = "Select outcome type (X-axis):",
+                     label = "Select outcome type (x-axis):",
                      choices = GENOME_WIDE_TYPES,
                      selected = "PQ_DELETION",
                      multiple = F,
