@@ -44,7 +44,11 @@ function(input, output, session) {
     con <- db_con()
     genes <- tbl(con, "barcodeCount") %>% select(Gene) %>% distinct() %>% collect() %>% pull()
     updatePickerInput(session, inputId = "highlightGene", choices = genes)
-    
+  })
+  
+  observe({
+    req(db_con())
+    con <- db_con()
     ##make this data static
     volcano_data <- prepareVolcanoData(con, input$VolcanoType)
     volcanodata(volcano_data)  
