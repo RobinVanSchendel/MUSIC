@@ -88,13 +88,30 @@ fluidPage(
                                       choices = c("horizontal","vertical"),
                                       inline = T
                    ),
-                   numericInput("highlightTop", "Highlight top 'x' genes (based on x-axis only!): ", value = 100),
-                   checkboxGroupInput(inputId = "highlightShow", label = "Show  top up/down:", inline = T, choices = c("down","up"), selected =  c("down","up")),
-                   checkboxInput(inputId = "overlapping_genes_only",
-                                 label = "Only show genes present in top 'x' in multiple experiments:",
-                                 value = TRUE),
-                   numericInput("overlapping_genes_count", "Gene in top 'x' in how many experiments:", value = 4),
                  ),
+                 ##volcano genome-wide
+                 conditionalPanel(
+                   condition = "input.tabs == 'Volcano'",
+                   pickerInput(
+                     inputId = "VolcanoType",
+                     label = "Select Type(s):",
+                     choices = GENOME_WIDE_TYPES,
+                     selected = GENOME_WIDE_TYPES[1],
+                     options = list(
+                       `actions-box` = TRUE, 
+                       size = 10,
+                       `live-search`=TRUE,
+                       `selected-text-format` = "count > 3"
+                     ), 
+                     multiple = F
+                   ),
+                 ),
+                 numericInput("highlightTop", "Highlight top 'x' genes (based on x-axis only!): ", value = 100),
+                 checkboxGroupInput(inputId = "highlightShow", label = "Show  top up/down:", inline = T, choices = c("down","up"), selected =  c("down","up")),
+                 checkboxInput(inputId = "overlapping_genes_only",
+                               label = "Only show genes present in top 'x' in multiple experiments:",
+                               value = TRUE),
+                 numericInput("overlapping_genes_count", "Gene in top 'x' in how many experiments:", value = 4),
     ),
     mainPanel(
       uiOutput("dynamicTabs")

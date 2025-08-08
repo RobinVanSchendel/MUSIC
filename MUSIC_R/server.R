@@ -5,6 +5,9 @@ function(input, output, session) {
     generateTabs(input$data_input)
   })
   
+  ##store some data
+  volcanodata <- reactiveVal()
+  
   # Reactive database connection
   db_con <- reactive({
     getDbConnection(input$data_input)
@@ -19,8 +22,16 @@ function(input, output, session) {
   # Render UI for XY plot
   output$UIXYplot <- renderUI({
     withSpinner(plotOutput("XYplot", height = input$plotHeight, width = input$plotWidth,
-               hover = hoverOpts("plot_hover", delay = 10, delayType = "debounce")))
+               hover = hoverOpts("plot_xy", delay = 10, delayType = "debounce")))
   })
+  
+  output$UIVolcanoplot <- renderUI({
+    withSpinner(plotOutput("Volcanoplot", height = input$plotHeight, width = input$plotWidth,
+                           hover = hoverOpts("plot_volcano", delay = 10, delayType = "debounce"),
+                           brush = "plot_volcano_brush"))
+  })
+  
+  
   
   # Reactive theme object
   theme_object <- reactive({
@@ -33,6 +44,10 @@ function(input, output, session) {
     con <- db_con()
     genes <- tbl(con, "barcodeCount") %>% select(Gene) %>% distinct() %>% collect() %>% pull()
     updatePickerInput(session, inputId = "highlightGene", choices = genes)
+    
+    ##make this data static
+    volcano_data <- prepareVolcanoData(con, input$VolcanoType)
+    volcanodata(volcano_data)  
   })
   
   # Render XY plot
@@ -56,6 +71,47 @@ function(input, output, session) {
     final_plot +
       facet_wrap(Alias ~ ., ncol = 2, labeller = as_labeller(GENOME_WIDE_LABEL_MAP)) +
       theme_object()
+  })
+  
+  # Render Volcano plotXYplot
+  ##TODO: check WT
+  output$Volcanoplot <- renderPlot({
+    req(volcanodata())
+    
+    plotType = input$VolcanoType
+    
+    df <- volcanodata()
+    highlightPart <- getHighlightedGenes(df, input)
+    topGenes <- getTopGenesVolcano(df, input, plotType)
+    
+    base_plot <- ggplot(data = df, aes(y = Pvalue, x = log2fraction)) +
+      geom_point() +
+      NULL
+    
+    final_plot <- addHighlightsAndMarginalsVolcano(
+      base_plot, input, highlightPart, topGenes$up, topGenes$down)
+    
+    final_plot = final_plot + facet_wrap(Alias ~ ., ncol = 2, labeller = as_labeller(GENOME_WIDE_LABEL_MAP)) +
+      theme_object() +
+      geom_vline(xintercept = c(-0.5, 0.5), linetype = "dashed") +
+      NULL
+    
+    ##TODO: check brush
+    #if(!is.null(input$plot_volcano_brush)){
+    #  brush = input$plot_volcano_brush
+    #  print(brush)
+    #}
+    final_plot
+  })
+  
+  ##for the hover
+  output$hover_volcano <- renderUI({
+    hover <- input$plot_volcano
+    if(is.null(hover)){
+      return()
+    }
+    df <- volcanodata()
+    createHoverTooltip(hover, df)
   })
   
   # Optional: observe tab selection

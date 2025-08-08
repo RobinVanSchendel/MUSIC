@@ -1,4 +1,5 @@
 library(gridExtra)
+library(DT)
 library(scattermore)
 library(ggstance)
 library(shinycssloaders)
@@ -17,6 +18,7 @@ source("functions/db_helpers.R")
 source("functions/theme_helpers.R")
 source("genome_wide_r/xy_plot_helpers.R")
 source("genome_wide_r/gene_barcode.R")
+source("genome_wide_r/volcano_plot_helpers.R")
 
 
 GENOME_WIDE_DB = "Z:/Marco/Temp/Backup D/Temp/MBdata/Processed_Again/MBCrisprMBAgain_1_1.db" ##still change

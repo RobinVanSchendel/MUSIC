@@ -4,7 +4,7 @@ generateTabs <- function(data_input) {
                 tabPanel("Genes & Barcodes", h1("genes and barcodes"), withSpinner(DT::dataTableOutput("gene_barcode"))),
                 tabPanel("Waterfall", uiOutput("test")),
                 tabPanel("XY", p("XY plot is meant to quickly ascertain if a Gene deviates..."), uiOutput("UIXYplot")),
-                tabPanel("Volcano")
+                tabPanel("Volcano", uiOutput("UIVolcanoplot"), uiOutput("hover_volcano"))
     )
   } else {
     tabsetPanel(id = "tabs",
