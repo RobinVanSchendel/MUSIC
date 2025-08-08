@@ -18,8 +18,8 @@ function(input, output, session) {
   
   # Render UI for XY plot
   output$UIXYplot <- renderUI({
-    plotOutput("XYplot", height = input$plotHeight, width = input$plotWidth,
-               hover = hoverOpts("plot_hover", delay = 10, delayType = "debounce"))
+    withSpinner(plotOutput("XYplot", height = input$plotHeight, width = input$plotWidth,
+               hover = hoverOpts("plot_hover", delay = 10, delayType = "debounce")))
   })
   
   # Reactive theme object

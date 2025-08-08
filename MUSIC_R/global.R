@@ -1,6 +1,7 @@
 library(gridExtra)
 library(scattermore)
 library(ggstance)
+library(shinycssloaders)
 library(ggExtra)
 library(ggrepel)
 library(dplyr)
@@ -50,12 +51,14 @@ candidate_conn <- function(){
   con <- dbConnect(RSQLite::SQLite(), dbname = CANDIDATE_DB)
 }
 
+##collect the genes/barcodes to keep the data static
 GENOME_WIDE_GENE_INFO <- tbl(genome_wide_conn(), "countTable") %>% select(Gene, Barcode) %>%
   distinct() %>%
   group_by(Gene) %>%
   summarise(nrBarcodes = n()) %>% 
   collect()
 
+##collect the genes/barcodes to keep the data static
 FOCUSED_GENE_INFO <- tbl(candidate_conn(), "countTable") %>% select(Gene, Barcode) %>%
   distinct() %>%
   group_by(Gene) %>%
