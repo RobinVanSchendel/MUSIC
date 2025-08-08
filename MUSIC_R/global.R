@@ -11,6 +11,13 @@ library(RSQLite)
 library(ggplot2)
 library(shiny)
 
+source("functions/tabs.R")
+source("functions/db_helpers.R")
+source("functions/theme_helpers.R")
+source("genome_wide_r/xy_plot_helpers.R")
+source("genome_wide_r/gene_barcode.R")
+
+
 GENOME_WIDE_DB = "Z:/Marco/Temp/Backup D/Temp/MBdata/Processed_Again/MBCrisprMBAgain_1_1.db" ##still change
 CANDIDATE_DB = "Z:/Marco/CustomClonedLibrary/oPools seq files/MBCrisprMBSubscreeen_Full_1MHfSNVtop150.db"   # new, test if same output as originalis a
 
@@ -41,5 +48,18 @@ candidate_conn <- function(){
     stop(paste("File does not exist:",CANDIDATE_DB))
   }
   con <- dbConnect(RSQLite::SQLite(), dbname = CANDIDATE_DB)
-} 
+}
+
+GENOME_WIDE_GENE_INFO <- tbl(genome_wide_conn(), "countTable") %>% select(Gene, Barcode) %>%
+  distinct() %>%
+  group_by(Gene) %>%
+  summarise(nrBarcodes = n()) %>% 
+  collect()
+
+FOCUSED_GENE_INFO <- tbl(candidate_conn(), "countTable") %>% select(Gene, Barcode) %>%
+  distinct() %>%
+  group_by(Gene) %>%
+  summarise(nrBarcodes = n()) %>% 
+  collect()
+
 
