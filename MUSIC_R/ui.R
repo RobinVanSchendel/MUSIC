@@ -4,7 +4,8 @@ fluidPage(
   sidebarLayout(
     sidebarPanel(
                  radioButtons("data_input", "Select MUSIC data set:",
-                   choices = list("Genome Wide" = 1,"Focused Candidate" = 2)),
+                   choices = list("Genome Wide" = 1,"Focused Candidate" = 2),
+                   selected = 2),
                  hr(),
                  sliderInput("plotHeight", "Plot height (# pixels): ",
                              value = 600, min = 100, max = 5000, step = 50
@@ -97,6 +98,23 @@ fluidPage(
                      label = "Select Type(s):",
                      choices = GENOME_WIDE_TYPES,
                      selected = GENOME_WIDE_TYPES[1],
+                     options = list(
+                       `actions-box` = TRUE, 
+                       size = 10,
+                       `live-search`=TRUE,
+                       `selected-text-format` = "count > 3"
+                     ), 
+                     multiple = F
+                   ),
+                 ),
+                 ##volcano genome-wide
+                 conditionalPanel(
+                   condition = "input.tabs == 'Volcano '",
+                   pickerInput(
+                     inputId = "VolcanoFocusedType",
+                     label = "Select Type(s):",
+                     choices = FOCUSED_TYPES,
+                     selected = FOCUSED_TYPES[1],
                      options = list(
                        `actions-box` = TRUE, 
                        size = 10,

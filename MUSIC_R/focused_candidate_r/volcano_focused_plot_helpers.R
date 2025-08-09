@@ -1,6 +1,6 @@
-prepareVolcanoData <- function(con, type) {
-  tbl(con, "geneAlt") %>%
-    filter(Type == type) %>%
+prepareVolcanoFocusedData <- function(con, type) {
+  tbl(con, "outcomes") %>%
+    filter(outcomeTop == type) %>%
     collect() %>%
     mutate(log2fraction = log2(fraction/mean))
 }

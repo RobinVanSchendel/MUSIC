@@ -19,6 +19,7 @@ source("functions/theme_helpers.R")
 source("genome_wide_r/xy_plot_helpers.R")
 source("genome_wide_r/gene_barcode.R")
 source("genome_wide_r/volcano_plot_helpers.R")
+source("focused_candidate_r/volcano_focused_plot_helpers.R")
 
 
 GENOME_WIDE_DB = "Z:/Marco/Temp/Backup D/Temp/MBdata/Processed_Again/MBCrisprMBAgain_1_1.db" ##still change
@@ -37,6 +38,12 @@ GENOME_WIDE_LABEL_MAP <- c(
   MB06 = "Target 3 - Replicate 2",
   MB07 = "Target 1 - InhibitorX?",
   MB08 = "Target 1 - InhibitorY?"
+)
+
+FOCUSED_MAP <- c(
+  MBsub1 = "Target 1 - Replicate 1",
+  MBsub2 = "Target 1 - Replicate 2",
+  MBsub2 = "Target 1 - Replicate 3"
 )
 
 genome_wide_conn <- function(){
@@ -66,5 +73,11 @@ FOCUSED_GENE_INFO <- tbl(candidate_conn(), "countTable") %>% select(Gene, Barcod
   group_by(Gene) %>%
   summarise(nrBarcodes = n()) %>% 
   collect()
+
+FOCUSED_TYPES <- tbl(candidate_conn(), "outcomes") %>% select(outcomeTop) %>%
+  distinct() %>%
+  collect() %>%
+  pull()
+
 
 

@@ -12,7 +12,7 @@ generateTabs <- function(data_input) {
                 tabPanel("Heatmap"),
                 tabPanel("UMAP - Gene"),
                 tabPanel("UMAP - Outcome"),
-                tabPanel("Volcano")
+                tabPanel("Volcano ", uiOutput("UIVolcanoFocusedplot"), uiOutput("hover_volcano_focused"))
     )
   }
 }

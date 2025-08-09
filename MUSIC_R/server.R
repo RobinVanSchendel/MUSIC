@@ -7,6 +7,7 @@ function(input, output, session) {
   
   ##store some data
   volcanodata <- reactiveVal()
+  volcanofocuseddata <- reactiveVal()
   
   # Reactive database connection
   db_con <- reactive({
@@ -32,6 +33,15 @@ function(input, output, session) {
   })
   
   
+  output$UIVolcanoFocusedplot <- renderUI({
+    withSpinner(plotOutput("VolcanoFocusedplot", height = input$plotHeight, width = input$plotWidth,
+                           hover = hoverOpts("plot_volcano_focused", delay = 10, delayType = "debounce"),
+                           brush = "plot_volcano_focused_brush"))
+  })
+  
+  
+  
+  
   
   # Reactive theme object
   theme_object <- reactive({
@@ -51,7 +61,17 @@ function(input, output, session) {
     con <- db_con()
     ##make this data static
     volcano_data <- prepareVolcanoData(con, input$VolcanoType)
-    volcanodata(volcano_data)  
+    volcanodata(volcano_data)
+    
+  })
+  
+  observe({
+    req(db_con())
+    con <- db_con()
+    ##make this data staic
+    volcano_focused_data <- prepareVolcanoFocusedData(con, input$VolcanoFocusedType)
+    volcanofocuseddata(volcano_focused_data)
+    
   })
   
   # Render XY plot
@@ -108,6 +128,39 @@ function(input, output, session) {
     final_plot
   })
   
+  # Render Volcano plotXYplot
+  ##TODO: check WT
+  output$VolcanoFocusedplot <- renderPlot({
+    req(volcanofocuseddata())
+    
+    plotType = input$VolcanoType
+    
+    df <- volcanofocuseddata()
+    highlightPart <- getHighlightedGenes(df, input)
+    topGenes <- getTopGenesVolcano(df, input, plotType)
+    
+    base_plot <- ggplot(data = df, aes(y = mutEvents, x = log2fraction)) +
+      geom_point() +
+      NULL
+    
+    final_plot <- addHighlightsAndMarginalsVolcano(
+      base_plot, input, highlightPart, topGenes$up, topGenes$down)
+    
+    final_plot = final_plot + facet_wrap(Alias ~ ., ncol = 3, labeller = as_labeller(FOCUSED_MAP)) +
+      theme_object() +
+      geom_vline(xintercept = c(-0.5, 0.5), linetype = "dashed") +
+      NULL
+    
+    ##TODO: check brush
+    #if(!is.null(input$plot_volcano_brush)){
+    #  brush = input$plot_volcano_brush
+    #  print(brush)
+    #}
+    final_plot
+  })
+  
+  
+  
   ##for the hover
   output$hover_volcano <- renderUI({
     hover <- input$plot_volcano
@@ -117,6 +170,18 @@ function(input, output, session) {
     df <- volcanodata()
     createHoverTooltip(hover, df)
   })
+  
+  output$hover_volcano_focused <- renderUI({
+    hover <- input$plot_volcano_focused
+    if(is.null(hover)){
+      return()
+    }
+    df <- volcanofocuseddata()
+    createHoverTooltip(hover, df)
+  })
+  
+  
+  
   
   # Optional: observe tab selection
   observeEvent(input$tabs, {
