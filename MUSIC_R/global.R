@@ -43,7 +43,7 @@ GENOME_WIDE_LABEL_MAP <- c(
 FOCUSED_MAP <- c(
   MBsub1 = "Target 1 - Replicate 1",
   MBsub2 = "Target 1 - Replicate 2",
-  MBsub2 = "Target 1 - Replicate 3"
+  MBsub3 = "Target 1 - Replicate 3"
 )
 
 genome_wide_conn <- function(){
