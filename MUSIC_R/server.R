@@ -22,19 +22,19 @@ function(input, output, session) {
   
   # Render UI for XY plot
   output$UIXYplot <- renderUI({
-    withSpinner(plotOutput("XYplot", height = input$plotHeight, width = input$plotWidth,
+    withSpinner(plotOutput("XYplot", height = input$plotHeight, width = getPlotWidth(input$plotWidth),
                hover = hoverOpts("plot_xy", delay = 10, delayType = "debounce")))
   })
   
   output$UIVolcanoplot <- renderUI({
-    withSpinner(plotOutput("Volcanoplot", height = input$plotHeight, width = input$plotWidth,
+    withSpinner(plotOutput("Volcanoplot", height = input$plotHeight, width = getPlotWidth(input$plotWidth),
                            hover = hoverOpts("plot_volcano", delay = 10, delayType = "debounce"),
                            brush = "plot_volcano_brush"))
   })
   
   
   output$UIVolcanoFocusedplot <- renderUI({
-    withSpinner(plotOutput("VolcanoFocusedplot", height = input$plotHeight, width = input$plotWidth,
+    withSpinner(plotOutput("VolcanoFocusedplot", height = input$plotHeight, width = getPlotWidth(input$plotWidth),
                            hover = hoverOpts("plot_volcano_focused", delay = 10, delayType = "debounce"),
                            brush = "plot_volcano_focused_brush"))
   })

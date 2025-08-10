@@ -79,5 +79,14 @@ FOCUSED_TYPES <- tbl(candidate_conn(), "outcomes") %>% select(outcomeTop) %>%
   collect() %>%
   pull()
 
+getPlotWidth <- function(width_input) {
+  if (is.null(width_input) || width_input == 0) {
+    return("100%")
+  } else {
+    return(width_input)
+  }
+}
+
+
 
 

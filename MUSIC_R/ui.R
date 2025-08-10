@@ -8,10 +8,10 @@ fluidPage(
                    selected = 2),
                  hr(),
                  sliderInput("plotHeight", "Plot height (# pixels): ",
-                             value = 600, min = 100, max = 5000, step = 50
+                             value = 600, min = 0, max = 5000, step = 50
                  ),
-                 sliderInput("plotWidth", "Plot width (# pixels):", 
-                             value = 800, min = 100, max = 5000, step = 50
+                 sliderInput("plotWidth", "Plot width (# pixels, 0 = 100%):", 
+                             value = 0, min = 0, max = 5000, step = 50
                  ),
                  pickerInput(
                    inputId = "highlightGene", 
@@ -124,12 +124,19 @@ fluidPage(
                      multiple = F
                    ),
                  ),
-                 numericInput("highlightTop", "Highlight top 'x' genes (based on x-axis only!): ", value = 100),
-                 checkboxGroupInput(inputId = "highlightShow", label = "Show  top up/down:", inline = T, choices = c("down","up"), selected =  c("down","up")),
-                 checkboxInput(inputId = "overlapping_genes_only",
-                               label = "Only show genes present in top 'x' in multiple experiments:",
-                               value = TRUE),
-                 numericInput("overlapping_genes_count", "Gene in top 'x' in how many experiments:", value = 4),
+                 wellPanel(
+                   h4("Highlight Top Genes"),
+                   numericInput("highlightTop", "Highlight top N genes (based on x-axis only!): ", value = 100),
+                   checkboxGroupInput(inputId = "highlightShow", label = "Direction of top genes to highlight:", inline = T, 
+                                      choices = c("Increased" = "up", "Reduced" = "down"), selected =  c("down","up")),
+                 ),
+                 wellPanel(
+                   h4("Filter by Overlap Across Experiments"),
+                   checkboxInput(inputId = "overlapping_genes_only",
+                                 label = "Show only genes in top N across multiple experiments:",
+                                 value = TRUE),
+                   numericInput("overlapping_genes_count", "Minimum number of experiments a gene must appear in top N:", value = 4),
+                 )
     ),
     mainPanel(
       uiOutput("dynamicTabs")
