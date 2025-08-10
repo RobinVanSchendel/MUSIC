@@ -14,7 +14,6 @@ library(ggplot2)
 library(shiny)
 
 source("functions/tabs.R")
-source("functions/db_helpers.R")
 source("functions/theme_helpers.R")
 source("genome_wide_r/xy_plot_helpers.R")
 source("genome_wide_r/gene_barcode.R")
