@@ -18,6 +18,7 @@ source("functions/theme_helpers.R")
 source("genome_wide_r/xy_plot_helpers.R")
 source("genome_wide_r/gene_barcode.R")
 source("genome_wide_r/volcano_plot_helpers.R")
+source("genome_wide_r/waterfall_plot_helpers.R")
 source("focused_candidate_r/volcano_focused_plot_helpers.R")
 
 

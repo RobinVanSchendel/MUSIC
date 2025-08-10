@@ -23,6 +23,13 @@ function(input, output, session) {
     renderGeneBarcodeTable(input$data_input)
   })
   
+  
+  # Render UI for Waterfall plot
+  output$UIWaterfall <- renderUI({
+    withSpinner(plotOutput("Waterfallplot", height = input$plotHeight, width = getPlotWidth(input$plotWidth),
+                           hover = hoverOpts("plot_waterfall", delay = 10, delayType = "debounce")))
+  })
+  
   # Render UI for XY plot
   output$UIXYplot <- renderUI({
     withSpinner(plotOutput("XYplot", height = input$plotHeight, width = getPlotWidth(input$plotWidth),
@@ -89,6 +96,28 @@ function(input, output, session) {
     volcano_focused_data <- prepareVolcanoFocusedData(con, input$VolcanoFocusedType)
     volcanofocuseddata(volcano_focused_data)
   })
+  
+  output$Waterfallplot <- renderPlot({
+    req(db_con_genome_wide())
+    con <- db_con_genome_wide()
+    df <- prepareWaterfallData(con)
+    
+    df <- df %>% group_by(Alias, Type) %>%
+      arrange(fraction) %>%
+      mutate(rowNr = row_number())
+    
+    sds = df %>% group_by(Alias, Type) %>%
+      summarise(mean = mean(fraction), sd = sd(fraction))
+    
+    ggplot(df, aes(x = rowNr, y = fraction)) +
+      geom_hline(data = sds, aes(yintercept = mean+3*sd), linetype = "dashed", color = "grey30") +
+      geom_hline(data = sds, aes(yintercept = mean-3*sd), linetype = "dashed", color = "grey30") +
+      geom_point(size = .5, alpha = .6) +
+      facet_wrap(~Type, scales = "free") +
+      theme_object() +
+      NULL
+  })
+  
   
   # Render XY plot
   output$XYplot <- renderPlot({
