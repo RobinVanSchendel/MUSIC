@@ -10,8 +10,11 @@ function(input, output, session) {
   volcanofocuseddata <- reactiveVal()
   
   # Reactive database connection
-  db_con <- reactive({
-    getDbConnection(input$data_input)
+  db_con_genome_wide <- reactive({
+    return(genome_wide_conn())
+  })
+  db_con_candidate <- reactive({
+    return(candidate_conn())
   })
   
   # Render gene barcode table
@@ -49,35 +52,48 @@ function(input, output, session) {
   })
   
   # Update picker input for gene highlighting
-  observe({
-    req(db_con())
-    con <- db_con()
-    genes <- tbl(con, "barcodeCount") %>% select(Gene) %>% distinct() %>% collect() %>% pull()
-    updatePickerInput(session, inputId = "highlightGene", choices = genes)
+  observeEvent(input$data_input, {
+    if(input$data_input == 1){
+      req(db_con_genome_wide())
+      print("update highlightGene")
+      con <- db_con_genome_wide()
+      genes <- tbl(con, "barcodeCount") %>% select(Gene) %>% distinct() %>% collect() %>% pull()
+      updatePickerInput(session, inputId = "highlightGene", choices = genes)
+      print("update highlightGene finished")
+    }
+    else if(input$data_input == 2){
+      req(db_con_candidate())
+      print("update highlightGene")
+      con <- db_con_candidate()
+      genes <- tbl(con, "barcodeCount") %>% select(Gene) %>% distinct() %>% collect() %>% pull()
+      updatePickerInput(session, inputId = "highlightGeneFocused", choices = genes)
+      print("update highlightGeneFocused finished")
+    }
   })
   
-  observe({
-    req(db_con())
-    con <- db_con()
-    ##make this data static
-    volcano_data <- prepareVolcanoData(con, input$VolcanoType)
-    volcanodata(volcano_data)
-    
+  observeEvent(input$VolcanoType, {
+      req(db_con_genome_wide())
+      con <- db_con_genome_wide()
+      ##make this data static
+      print("prepareVolcanoData")
+      volcano_data <- prepareVolcanoData(con, input$VolcanoType)
+      print("got prepareVolcanoData")
+      volcanodata(volcano_data)
   })
   
-  observe({
-    req(db_con())
-    con <- db_con()
+  observeEvent(input$VolcanoFocusedType, {
+    req(db_con_candidate())
+    con <- db_con_candidate()
+    print("prepareVolcanoFocusedData")
     ##make this data staic
     volcano_focused_data <- prepareVolcanoFocusedData(con, input$VolcanoFocusedType)
     volcanofocuseddata(volcano_focused_data)
-    
   })
   
   # Render XY plot
   output$XYplot <- renderPlot({
-    req(db_con())
-    con <- db_con()
+    req(db_con_genome_wide())
+    con <- db_con_genome_wide()
     plotX <- input$XYX
     plotY <- input$XYY
     
@@ -105,6 +121,9 @@ function(input, output, session) {
     plotType = input$VolcanoType
     
     df <- volcanodata()
+    if(nrow(df) == 0){
+      return()
+    }
     highlightPart <- getHighlightedGenes(df, input)
     topGenes <- getTopGenesVolcano(df, input, plotType)
     

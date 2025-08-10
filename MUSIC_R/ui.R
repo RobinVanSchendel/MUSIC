@@ -13,19 +13,41 @@ fluidPage(
                  sliderInput("plotWidth", "Plot width (# pixels, 0 = 100%):", 
                              value = 0, min = 0, max = 5000, step = 50
                  ),
-                 pickerInput(
-                   inputId = "highlightGene", 
-                   label = "Select Gene(s) to highlight:",
-                   choices = NULL,
-                   multiple = T,
-                   options = pickerOptions(
-                     actionsBox = TRUE,
-                     `live-search` = TRUE,
-                     virtualScroll = 10,
-                     size = 10
+                 ##Gene for Genome wide
+                 conditionalPanel(
+                   condition = "input.data_input == '1'",
+                   pickerInput(
+                     inputId = "highlightGene", 
+                     label = "Select Gene(s) to highlight:",
+                     choices = NULL,
+                     multiple = T,
+                     options = pickerOptions(
+                       actionsBox = TRUE,
+                       `live-search` = TRUE,
+                       virtualScroll = 10,
+                       size = 10
+                     )
+                     
                    )
-                   
                  ),
+                 ##Gene for Genome wide
+                 conditionalPanel(
+                   condition = "input.data_input == '2'",
+                   pickerInput(
+                     inputId = "highlightGeneFocused", 
+                     label = "Select Gene(s) to highlight:",
+                     choices = NULL,
+                     multiple = T,
+                     options = pickerOptions(
+                       actionsBox = TRUE,
+                       `live-search` = TRUE,
+                       virtualScroll = 10,
+                       size = 10
+                     )
+                     
+                   )
+                 ),
+                 
                  dropdownButton(
                    label = "Theme settings",
                    tooltip = T,
@@ -127,14 +149,16 @@ fluidPage(
                  wellPanel(
                    h4("Highlight Top Genes"),
                    numericInput("highlightTop", "Highlight top N genes (based on x-axis only!): ", value = 100),
-                   checkboxGroupInput(inputId = "highlightShow", label = "Direction of top genes to highlight:", inline = T, 
-                                      choices = c("Increased" = "up", "Reduced" = "down"), selected =  c("down","up")),
+                   prettyCheckboxGroup(inputId = "highlightShow", label = "Direction of top genes to highlight:", inline = T, 
+                                      choices = c("Reduced" = "down", "Increased" = "up"), selected =  c("down","up"), status = "primary"),
                  ),
+                 
+                 # Section 2: Overlap Filtering (conditionally shown)
                  wellPanel(
                    h4("Filter by Overlap Across Experiments"),
-                   checkboxInput(inputId = "overlapping_genes_only",
-                                 label = "Show only genes in top N across multiple experiments:",
-                                 value = TRUE),
+                   materialSwitch(inputId = "overlapping_genes_only",
+                                 label = "Enable filter:",
+                                 value = TRUE, status = "primary"),
                    numericInput("overlapping_genes_count", "Minimum number of experiments a gene must appear in top N:", value = 4),
                  )
     ),
