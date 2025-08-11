@@ -59,15 +59,26 @@ createHoverTooltip <- function(hover, df) {
                   padding: 5px;
                   z-index:100; background-color: rgba(200, 200, 245, 0.65); ",
                   "left:", left_px + 20, "px; top:", top_px + 32, "px;")
+  ##check if log2fraction is present
+  if("log2fraction" %in% colnames(point)){
+    wellPanel(
+      style = style,
+      p(HTML(paste0(
+        "<b> Name: </b>", point$Gene, "<br/>",
+        "<b> Fold change: </b>", round(point$log2fraction, 2), "<br/>",
+        "<b> Fraction: </b>", round(point$fraction, 2), "<br/>",
+        "<b> Significance: </b>", round(point$Pvalue, 2), "<br/>",
+        "<b> Mutagenic events: </b>", point$counts, "/", point$trials, "<br/>"
+      )))
+    )
+  } else{
+    ##probably have to check a bit better
+    wellPanel(
+      style = style,
+      p(HTML(paste0(
+        "<b> Name: </b>", point$Gene, "<br/>"
+      )))
+    )
+  }
   
-  wellPanel(
-    style = style,
-    p(HTML(paste0(
-      "<b> Name: </b>", point$Gene, "<br/>",
-      "<b> Fold change: </b>", round(point$log2fraction, 2), "<br/>",
-      "<b> Fraction: </b>", round(point$fraction, 2), "<br/>",
-      "<b> Significance: </b>", round(point$Pvalue, 2), "<br/>",
-      "<b> Mutagenic events: </b>", point$counts, "/", point$trials, "<br/>"
-    )))
-  )
 }

@@ -8,6 +8,8 @@ function(input, output, session) {
   ##store some data
   volcanodata <- reactiveVal()
   volcanofocuseddata <- reactiveVal()
+  ##TODO: implement this to increase speed!
+  xydata <- reactiveVal()
   
   # Reactive database connection
   db_con_genome_wide <- reactive({
@@ -27,19 +29,23 @@ function(input, output, session) {
   # Render UI for Waterfall plot
   output$UIWaterfall <- renderUI({
     withSpinner(plotOutput("Waterfallplot", height = input$plotHeight, width = getPlotWidth(input$plotWidth),
-                           hover = hoverOpts("plot_waterfall", delay = 10, delayType = "debounce")))
+                           hover = hoverOpts("plot_waterfall", delay = 10, delayType = "debounce"),
+                           brush = "plot_waterfallplot_brush"))
   })
   
   # Render UI for XY plot
   output$UIXYplot <- renderUI({
     withSpinner(plotOutput("XYplot", height = input$plotHeight, width = getPlotWidth(input$plotWidth),
-               hover = hoverOpts("plot_xy", delay = 10, delayType = "debounce")))
+               hover = hoverOpts("plot_xy", delay = 10, delayType = "debounce"),
+               brush = "plot_xy_brush",
+               dblclick = "plot_xy_dblclick"))
   })
   
   output$UIVolcanoplot <- renderUI({
     withSpinner(plotOutput("Volcanoplot", height = input$plotHeight, width = getPlotWidth(input$plotWidth),
                            hover = hoverOpts("plot_volcano", delay = 10, delayType = "debounce"),
-                           brush = "plot_volcano_brush"))
+                           brush = "plot_volcano_brush",
+                           dblclick = "plot_volcano_dblclick"))
   })
   
   
@@ -50,7 +56,26 @@ function(input, output, session) {
   })
   
   
+  ##volcano brush
+  observeEvent(input$plot_volcano_brush, {
+    data = volcanodata()
+    brushed <- brushedPoints(data, input$plot_volcano_brush)
+    output$volcano_table <- renderDT(makeInteractiveTable(brushed))
+  })
   
+    ##for zooming purposes
+  ranges_volcano_brush <- reactiveValues(x = NULL, y = NULL)
+  ranges_xy_brush <- reactiveValues(x = NULL, y = NULL)
+  
+  
+  # Zoom on double-click
+  observeEvent(input$plot_volcano_dblclick, {
+    updateZoomRanges(input$plot_volcano_brush, ranges_volcano_brush)
+  })
+  # Zoom on double-click
+  observeEvent(input$plot_xy_dblclick, {
+    updateZoomRanges(input$plot_xy_brush, ranges_xy_brush)
+  })
   
   
   # Reactive theme object
@@ -139,7 +164,8 @@ function(input, output, session) {
     
     final_plot +
       facet_wrap(Alias ~ ., ncol = 2, labeller = as_labeller(GENOME_WIDE_LABEL_MAP)) +
-      theme_object()
+      theme_object() +
+      coord_cartesian(xlim = ranges_xy_brush$x, ylim = ranges_xy_brush$y)
   })
   
   # Render Volcano plotXYplot
@@ -168,11 +194,7 @@ function(input, output, session) {
       geom_vline(xintercept = c(-0.5, 0.5), linetype = "dashed") +
       NULL
     
-    ##TODO: check brush
-    #if(!is.null(input$plot_volcano_brush)){
-    #  brush = input$plot_volcano_brush
-    #  print(brush)
-    #}
+    final_plot <- final_plot + coord_cartesian(xlim = ranges_volcano_brush$x, ylim = ranges_volcano_brush$y)
     final_plot
   })
   
@@ -207,7 +229,20 @@ function(input, output, session) {
     final_plot
   })
   
-  
+  ##for the hover
+  output$hover_xy <- renderUI({
+    hover <- input$plot_xy
+    if(is.null(hover)){
+      return()
+    }
+    ##need to get this data from an observe
+    con = db_con_genome_wide()
+    plotX <- input$XYX
+    plotY <- input$XYY
+    
+    df <- prepareXYData(con, plotX, plotY)
+    createHoverTooltip(hover, df)
+  })
   
   ##for the hover
   output$hover_volcano <- renderUI({

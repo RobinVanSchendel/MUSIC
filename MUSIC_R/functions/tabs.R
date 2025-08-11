@@ -3,8 +3,8 @@ generateTabs <- function(data_input) {
     tabsetPanel(id = "tabs",
                 tabPanel("Genes & Barcodes", h1("genes and barcodes"), withSpinner(DT::dataTableOutput("gene_barcode"))),
                 tabPanel("Waterfall", uiOutput("UIWaterfall")),
-                tabPanel("XY", p("XY plot is meant to quickly ascertain if a Gene deviates..."), uiOutput("UIXYplot")),
-                tabPanel("Volcano", uiOutput("UIVolcanoplot"), uiOutput("hover_volcano"))
+                tabPanel("XY", p("XY plot is meant to quickly ascertain if a Gene deviates..."), uiOutput("UIXYplot"), uiOutput("hover_xy")),
+                tabPanel("Volcano", uiOutput("UIVolcanoplot"), uiOutput("hover_volcano"), h3("Selected Data Points"), DTOutput("volcano_table"))
     )
   } else {
     tabsetPanel(id = "tabs",
