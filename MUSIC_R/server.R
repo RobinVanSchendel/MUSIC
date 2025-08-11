@@ -8,6 +8,8 @@ function(input, output, session) {
   ##store some data
   volcanodata <- reactiveVal()
   volcanofocuseddata <- reactiveVal()
+  ##TODO: implement this to increase speed!
+  xydata <- reactiveVal()
   
   # Reactive database connection
   db_con_genome_wide <- reactive({
@@ -227,7 +229,20 @@ function(input, output, session) {
     final_plot
   })
   
-  
+  ##for the hover
+  output$hover_xy <- renderUI({
+    hover <- input$plot_xy
+    if(is.null(hover)){
+      return()
+    }
+    ##need to get this data from an observe
+    con = db_con_genome_wide()
+    plotX <- input$XYX
+    plotY <- input$XYY
+    
+    df <- prepareXYData(con, plotX, plotY)
+    createHoverTooltip(hover, df)
+  })
   
   ##for the hover
   output$hover_volcano <- renderUI({
