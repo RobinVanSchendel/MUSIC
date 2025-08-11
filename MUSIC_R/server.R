@@ -27,13 +27,15 @@ function(input, output, session) {
   # Render UI for Waterfall plot
   output$UIWaterfall <- renderUI({
     withSpinner(plotOutput("Waterfallplot", height = input$plotHeight, width = getPlotWidth(input$plotWidth),
-                           hover = hoverOpts("plot_waterfall", delay = 10, delayType = "debounce")))
+                           hover = hoverOpts("plot_waterfall", delay = 10, delayType = "debounce"),
+                           brush = "plot_waterfallplot_brush"))
   })
   
   # Render UI for XY plot
   output$UIXYplot <- renderUI({
     withSpinner(plotOutput("XYplot", height = input$plotHeight, width = getPlotWidth(input$plotWidth),
-               hover = hoverOpts("plot_xy", delay = 10, delayType = "debounce")))
+               hover = hoverOpts("plot_xy", delay = 10, delayType = "debounce"),
+               brush = "plot_xyplot_brush"))
   })
   
   output$UIVolcanoplot <- renderUI({
