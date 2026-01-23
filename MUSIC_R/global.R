@@ -50,36 +50,49 @@ FOCUSED_MAP <- c(
 
 genome_wide_conn <- function(){
   if(!file.exists(GENOME_WIDE_DB)){
-    stop(paste("File does not exist:",GENOME_WIDE_DB))
+    warning(paste("File does not exist:",GENOME_WIDE_DB))
+    return(NULL)
   }
   con <- dbConnect(RSQLite::SQLite(), dbname = GENOME_WIDE_DB)
 }
 
 candidate_conn <- function(){
   if(!file.exists(CANDIDATE_DB)){
-    stop(paste("File does not exist:",CANDIDATE_DB))
+    warning(paste("File does not exist:",CANDIDATE_DB))
+    return(NULL)
   }
   con <- dbConnect(RSQLite::SQLite(), dbname = CANDIDATE_DB)
 }
 
 ##collect the genes/barcodes to keep the data static
-GENOME_WIDE_GENE_INFO <- tbl(genome_wide_conn(), "countTable") %>% select(Gene, Barcode) %>%
-  distinct() %>%
-  group_by(Gene) %>%
-  summarise(nrBarcodes = n()) %>% 
-  collect()
+genome_wide_connection = genome_wide_conn()
+if(!is.null(genome_wide_connection)){
+  GENOME_WIDE_GENE_INFO <- tbl(genome_wide_connection, "countTable") %>% select(Gene, Barcode) %>%
+    distinct() %>%
+    group_by(Gene) %>%
+    summarise(nrBarcodes = n()) %>% 
+    collect()
+} else{
+  GENOME_WIDE_GENE_INFO = NULL
+}
 
 ##collect the genes/barcodes to keep the data static
-FOCUSED_GENE_INFO <- tbl(candidate_conn(), "countTable") %>% select(Gene, Barcode) %>%
-  distinct() %>%
-  group_by(Gene) %>%
-  summarise(nrBarcodes = n()) %>% 
-  collect()
-
-FOCUSED_TYPES <- tbl(candidate_conn(), "outcomes") %>% select(outcomeTop) %>%
-  distinct() %>%
-  collect() %>%
-  pull()
+candidate_connection = candidate_conn()
+if(!is.null(candidate_connection)){
+  FOCUSED_GENE_INFO <- tbl(candidate_connection, "countTable") %>% select(Gene, Barcode) %>%
+    distinct() %>%
+    group_by(Gene) %>%
+    summarise(nrBarcodes = n()) %>% 
+    collect()
+  
+  FOCUSED_TYPES <- tbl(candidate_connection, "outcomes") %>% select(outcomeTop) %>%
+    distinct() %>%
+    collect() %>%
+    pull()
+} else{
+  FOCUSED_GENE_INFO = NULL
+  FOCUSED_TYPES = NULL
+}
 
 getPlotWidth <- function(width_input) {
   if (is.null(width_input) || width_input == 0) {
