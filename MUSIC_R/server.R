@@ -63,6 +63,14 @@ function(input, output, session) {
     output$volcano_table <- renderDT(makeInteractiveTable(brushed))
   })
   
+  ##xy brush
+  observeEvent(input$plot_xy_brush, {
+    req(xydata())
+    data = xydata()
+    brushed <- brushedPoints(data, input$plot_xy_brush)
+    output$xy_table <- renderDT(makeInteractiveTable(brushed))
+  })
+  
     ##for zooming purposes
   ranges_volcano_brush <- reactiveValues(x = NULL, y = NULL)
   ranges_xy_brush <- reactiveValues(x = NULL, y = NULL)
