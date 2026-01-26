@@ -4,8 +4,19 @@ generateTheme <- function(input) {
   if (input$theme_background) {
     themeObj <- themeObj + theme(panel.background = element_blank())
   }
+  
+  # Grid handling
   if (!input$theme_grid) {
-    themeObj <- themeObj + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+    themeObj <- themeObj + theme(
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank()
+    )
+  } else if (input$theme_background) {
+    # Grid ON + background BLANK → make grid visible
+    themeObj <- themeObj + theme(
+      panel.grid.major = element_line(colour = "grey70"),
+      panel.grid.minor = element_line(colour = "grey85")
+    )
   }
   
   themeObj <- themeObj + theme(
