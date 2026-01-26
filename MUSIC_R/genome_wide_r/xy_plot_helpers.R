@@ -34,6 +34,7 @@ buildXYPlot <- function(df, input, plotX, plotY) {
   } else if (input$geom_which == "density") {
     plot <- plot + geom_bin2d(bins = input$densityDots) + scale_fill_viridis_c()
   } else {
+    ##dots only, using scattermore because geom_point is too slow
     plot <- plot + geom_scattermore(alpha = 0.12, pointsize = 2.0)
   }
   
