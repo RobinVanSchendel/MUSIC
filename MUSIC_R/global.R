@@ -39,9 +39,7 @@ GENOME_WIDE_LABEL_MAP <- c(
   MB03 = "Target 2 - Replicate 1",
   MB04 = "Target 2 - Replicate 2",
   MB05 = "Target 3 - Replicate 1",
-  MB06 = "Target 3 - Replicate 2",
-  MB07 = "Target 1 - NU7441 (2μM)",
-  MB08 = "Target 1 - ART558 (10μM)"
+  MB06 = "Target 3 - Replicate 2"
 )
 
 FOCUSED_MAP <- c(

@@ -1,6 +1,7 @@
 prepareVolcanoData <- function(con, type) {
+  aliases = names(GENOME_WIDE_LABEL_MAP)
   tbl(con, "geneAlt") %>%
-    filter(Type == type) %>%
+    filter(Type == type, Alias %in% aliases ) %>%
     collect() %>%
     mutate(log2fraction = log2(fraction/mean))
 }

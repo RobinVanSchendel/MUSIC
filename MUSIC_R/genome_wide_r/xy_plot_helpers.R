@@ -1,6 +1,7 @@
 prepareXYData <- function(con, plotX, plotY) {
+  aliases = names(GENOME_WIDE_LABEL_MAP)
   tbl(con, "geneAlt") %>%
-    filter(Type %in% c(plotY, plotX)) %>%
+    filter(Type %in% c(plotY, plotX), Alias %in% aliases) %>%
     select(Gene, Alias, Type, fraction) %>%
     collect() %>%
     tidyr::spread(key = "Type", value = "fraction")
