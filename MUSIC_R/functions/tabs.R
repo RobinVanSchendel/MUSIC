@@ -20,9 +20,11 @@ generateTabs <- function(data_input) {
     tabsetPanel(id = "tabs",
                 tabPanel("Genes & Barcodes", h3("Genes and the number of barcodes per gene (focused candidate)"), DT::dataTableOutput("gene_barcode")),
                 tabPanel("Heatmap"),
-                tabPanel("UMAP - Gene"),
+                tabPanel("UMAP - Gene", h3("a UMAP representation of all hits, same as Figure x in our manuscript"),uiOutput("UIUmapPlot"), uiOutput("hover_umap_gene"),
+                         DTOutput("umap_gene_table")),
                 tabPanel("UMAP - Outcome"),
-                tabPanel("Volcano ", uiOutput("UIVolcanoFocusedplot"), uiOutput("hover_volcano_focused"))
+                tabPanel("Volcano ", uiOutput("UIVolcanoFocusedplot"), uiOutput("hover_volcano_focused")),
+                selected = "UMAP - Gene"
     )
   }
 }

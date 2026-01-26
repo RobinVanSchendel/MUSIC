@@ -10,6 +10,7 @@ function(input, output, session) {
   volcanofocuseddata <- reactiveVal()
   ##TODO: implement this to increase speed!
   xydata <- reactiveVal()
+  umap_gene_data <- reactiveVal()
   
   # Reactive database connection
   db_con_genome_wide <- reactive({
@@ -55,6 +56,13 @@ function(input, output, session) {
                            brush = "plot_volcano_focused_brush"))
   })
   
+  ##umap-gene plot
+  output$UIUmapPlot <- renderUI({
+    withSpinner(plotOutput("UmapPlot", height = input$plotHeight, width = getPlotWidth(input$plotWidth),
+                           hover = hoverOpts("plot_umap_focused", delay = 10, delayType = "debounce"),
+                           brush = "plot_umap_focused_brush"))
+  })
+  
   
   ##volcano brush
   observeEvent(input$plot_volcano_brush, {
@@ -70,6 +78,18 @@ function(input, output, session) {
     brushed <- brushedPoints(data, input$plot_xy_brush)
     output$xy_table <- renderDT(makeInteractiveTable(brushed))
   })
+  
+  ##umap_gene brush
+  observeEvent(input$plot_umap_focused_brush, {
+    req(umap_gene_data())
+    data = umap_gene_data()
+    brushed <- brushedPoints(data, input$plot_umap_focused_brush)
+    ##no need for some of these columns
+    brushed <- brushed %>% select(-size, -alpha)
+    output$umap_gene_table <- renderDT(makeInteractiveTable(brushed))
+  })
+  
+  
   
     ##for zooming purposes
   ranges_volcano_brush <- reactiveValues(x = NULL, y = NULL)
@@ -128,6 +148,13 @@ function(input, output, session) {
     ##make this data staic
     volcano_focused_data <- prepareVolcanoFocusedData(con, input$VolcanoFocusedType)
     volcanofocuseddata(volcano_focused_data)
+  })
+  
+  ##TODO change to only read in data when umap is needed
+  observe({
+    message("Reading in umap_gene_data")
+    umap_data = read_in_umap_gene_data()
+    umap_gene_data(umap_data)
   })
   
   output$Waterfallplot <- renderPlot({
@@ -265,6 +292,27 @@ function(input, output, session) {
     final_plot
   })
   
+  output$UmapPlot <- renderPlot({
+    req(umap_gene_data())
+    df = umap_gene_data()
+    
+    base_plot = ggplot(df, aes(x = X2, y = X1, col = Pathway1, alpha = alpha, size = size)) +
+      geom_point()
+    
+    final_plot = addLabelsUMAP(base_plot, df, input)
+    
+    #  geom_text_repel(data=subset(df, Gene != "NonTargeting"), aes(label = Gene), max.overlaps = 100)+
+    final_plot = final_plot +
+      theme_object() +
+      scale_color_manual(values = UMAP_GENE_COLORS)+
+      ##remove legends for size and alpha
+      guides(size = "none", alpha = "none")+
+      theme(legend.position = "top") +
+      theme_object() +
+      NULL
+    final_plot
+  })
+  
   ##for the hover
   output$hover_xy <- renderUI({
     req(xydata())
@@ -296,6 +344,17 @@ function(input, output, session) {
     createHoverTooltip(hover, df)
   })
   
+  ##hover for umap
+  output$hover_umap_gene <- renderUI({
+    hover <- input$plot_umap_focused
+    if(is.null(hover)){
+      return()
+    }
+    df <- umap_gene_data()
+    createHoverTooltip(hover, df)
+  })
+    
+    
   
   
   

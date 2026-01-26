@@ -18,15 +18,20 @@ source("functions/tabs.R")
 source("functions/theme_helpers.R")
 source("functions/zoom.R")
 source("functions/render_table.R")
+
 source("genome_wide_r/xy_plot_helpers.R")
 source("genome_wide_r/gene_barcode.R")
 source("genome_wide_r/volcano_plot_helpers.R")
 source("genome_wide_r/waterfall_plot_helpers.R")
+
 source("focused_candidate_r/volcano_focused_plot_helpers.R")
+source("focused_candidate_r/umap_gene_plot_helpers.R")
 
 
 GENOME_WIDE_DB = "Z:/Marco/Temp/Backup D/Temp/MBdata/Processed_Again/MBCrisprMBAgain_1_1.db" ##still change
 CANDIDATE_DB = "Z:/Marco/CustomClonedLibrary/oPools seq files/MBCrisprMBSubscreeen_Full_1MHfSNVtop150.db"   # new, test if same output as originalis a
+
+UMAP_GENE_FILE = "data/dfTest.txt"
 
 ##only used in waterfall plots for now
 GENOME_WIDE_TYPES = c( "INSERTION_1bp","LARGE_DELETION",
@@ -47,6 +52,13 @@ FOCUSED_MAP <- c(
   MBsub2 = "Target 1 - Replicate 2",
   MBsub3 = "Target 1 - Replicate 3"
 )
+
+##Define colours UMAP - gene
+UMAP_GENE_COLORS = c("other" = "black", "HIT" = "red",
+          "BER/SSBR" = "khaki",  "FORK QC" = "forestgreen",
+          "HR" = "purple",  "EJ" = "orange",       "NER" = "pink"  ,   "FA/ICL" ="hotpink1" ,
+          "53BP1" = "gold2" ,  "MMR"  = 'violet',   
+          "CONTROL" = "blue" , "TMEJ"  = "maroon" ,   "SSA"  = "brown"  ,   "RER" =  "magenta")
 
 genome_wide_conn <- function(){
   if(!file.exists(GENOME_WIDE_DB)){

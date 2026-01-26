@@ -5,7 +5,7 @@ fluidPage(
     sidebarPanel(
                  radioButtons("data_input", "Select MUSIC data set:",
                    choices = list("Genome Wide" = 1,"Focused Candidate" = 2),
-                   selected = 1),
+                   selected = 2),
                  hr(),
                  sliderInput("plotHeight", "Plot height (# pixels): ",
                              value = 600, min = 0, max = 5000, step = 50
@@ -123,7 +123,7 @@ fluidPage(
                                 inline = T),
                    numericInput(inputId = "densityDots",
                                 label = "Bin size for density plot",
-                                value = 200),
+                                value = 500),
                    checkboxGroupInput(inputId = "marginalPlot",
                                       label = "Add boxplot:",
                                       choices = c("horizontal","vertical"),
@@ -163,6 +163,11 @@ fluidPage(
                      ), 
                      multiple = F
                    ),
+                 ),
+                 ##UMAP - gene
+                 conditionalPanel(
+                   condition = "input.tabs == 'UMAP - Gene'",
+                   checkboxInput(inputId = "UMAP_gene_add_labels", label = "add Gene labels", value = T)
                  ),
                  wellPanel(
                    h4("Highlight Top Genes"),
