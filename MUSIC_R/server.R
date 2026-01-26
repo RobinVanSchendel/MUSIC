@@ -123,22 +123,48 @@ function(input, output, session) {
   })
   
   output$Waterfallplot <- renderPlot({
-    req(db_con_genome_wide())
+    req(input$waterfall_type, db_con_genome_wide())
     con <- db_con_genome_wide()
-    df <- prepareWaterfallData(con)
+    df <- prepareWaterfallData(con, input)
     
     df <- df %>% group_by(Alias, Type) %>%
-      arrange(fraction) %>%
-      mutate(rowNr = row_number())
+      arrange(desc(fraction)) %>%
+      mutate(rowNr = row_number()) %>%
+      ungroup()
     
     sds = df %>% group_by(Alias, Type) %>%
       summarise(mean = mean(fraction), sd = sd(fraction))
     
+    ##ensure order is correct
+    #levels = c("")
+    #df$Type = as.factor(df$Type, levels = c())
+    ##ensure the waterfall types are coloured
+    WATERFALL_TYPES = setNames(c(
+      "#FF8C00", "#124E8B","#05878C","#EC71A7", "#B03060", "#E6332A"),
+      GENOME_WIDE_TYPES
+    )
+    #only keep selected types
+    WATERFALL_TYPES <- WATERFALL_TYPES[names(WATERFALL_TYPES) %in% input$waterfall_type]
+    
+    df$Type = factor(df$Type, levels = names(WATERFALL_TYPES))
+    sds$Type = factor(sds$Type, levels = names(WATERFALL_TYPES))
+    
+    
     ggplot(df, aes(x = rowNr, y = fraction)) +
-      geom_hline(data = sds, aes(yintercept = mean+3*sd), linetype = "dashed", color = "grey30") +
-      geom_hline(data = sds, aes(yintercept = mean-3*sd), linetype = "dashed", color = "grey30") +
+      geom_hline(data = sds, aes(yintercept = mean+3*sd), linetype = "dashed", color = "grey30", inherit.aes = FALSE) +
+      geom_hline(data = sds, aes(yintercept = mean-3*sd), linetype = "dashed", color = "grey30", inherit.aes = FALSE) +
       geom_point(size = .5, alpha = .6) +
-      facet_wrap(~Type, scales = "free") +
+      facet_wrap2(~Type, scales = "free",
+                  strip = strip_themed(
+                    background_x = elem_list_rect(
+                      fill = WATERFALL_TYPES,
+                      color = "black"
+                    ),
+                    text_x = elem_list_text(
+                      color = "white",
+                      face  = "bold"
+                    ))
+                 ) +
       theme_object() +
       NULL
   })

@@ -70,6 +70,24 @@ fluidPage(
                                 value = 0.25)
                  ),
                  hr(),
+                 ###Waterfall plot
+                 conditionalPanel(
+                   condition = "input.tabs == 'Waterfall'",
+                   pickerInput(
+                     inputId = "waterfall_type", 
+                     label = "Select outcome type(s):",
+                     choices = GENOME_WIDE_TYPES,
+                     selected = GENOME_WIDE_TYPES,
+                     multiple = T,
+                     options = pickerOptions(
+                       actionsBox = TRUE,
+                       `live-search` = TRUE,
+                       virtualScroll = 10,
+                       size = 10
+                     )
+                   )
+                 ),
+                 
                  ##XY plot
                  conditionalPanel(
                    condition = "input.tabs == 'XY'",
