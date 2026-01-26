@@ -50,6 +50,8 @@ createHoverTooltip <- function(hover, df) {
   point <- nearPoints(df, hover, threshold = 10, maxpoints = 1, addDist = FALSE)
   if (nrow(point) == 0) return(NULL)
   
+  #message("number of points selected ",nrow(point))
+  
   left_pct <- (hover$x - hover$domain$left) / (hover$domain$right - hover$domain$left)
   top_pct <- (hover$domain$top - hover$y) / (hover$domain$top - hover$domain$bottom)
   

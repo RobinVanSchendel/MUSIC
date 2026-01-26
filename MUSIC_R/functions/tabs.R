@@ -3,19 +3,22 @@ generateTabs <- function(data_input) {
     tabsetPanel(id = "tabs",
                 tabPanel(
                   "Welcome",
-                  h1("Welcome"),
+                  h3("Welcome to MUSIC"),
+                  img(src = "figure_welcome.jpg", width = "100%"),
                   p("This application provides multiple interactive visualizations for exploring gene-level and barcode-level data."),
                   p("Use the tabs above to navigate between tables and plots, including waterfall, XY, and volcano plots."),
                   p("Hover over plots or select data points where available to view additional details.")
                 ),
-                tabPanel("Genes & Barcodes", h1("genes and barcodes"), withSpinner(DT::dataTableOutput("gene_barcode"))),
-                tabPanel("Waterfall", uiOutput("UIWaterfall")),
-                tabPanel("XY", p("XY plot is meant to quickly ascertain if a Gene deviates..."), uiOutput("UIXYplot"), uiOutput("hover_xy")),
-                tabPanel("Volcano", uiOutput("UIVolcanoplot"), uiOutput("hover_volcano"), h3("Selected Data Points"), DTOutput("volcano_table"))
+                tabPanel("Genes & Barcodes", h3("Genes and number of barcodes per gene (genome-wide)"),
+                         withSpinner(DT::dataTableOutput("gene_barcode"))),
+                tabPanel("Waterfall", h3("Aggregated Z-score for each gene for various outcomes"), uiOutput("UIWaterfall")),
+                tabPanel("XY", h3("XY plot is meant to quickly plot if a Gene deviates based on two outcomes types"), uiOutput("UIXYplot"), uiOutput("hover_xy")),
+                tabPanel("Volcano", h3("Volcan plot for each outcome type"), uiOutput("UIVolcanoplot"), uiOutput("hover_volcano"), h3("Selected Data Points"), DTOutput("volcano_table")),
+                selected = "Welcome"
     )
   } else {
     tabsetPanel(id = "tabs",
-                tabPanel("Genes & Barcodes", DT::dataTableOutput("gene_barcode")),
+                tabPanel("Genes & Barcodes", h3("Genes and the number of barcodes per gene (focused candidate)"), DT::dataTableOutput("gene_barcode")),
                 tabPanel("Heatmap"),
                 tabPanel("UMAP - Gene"),
                 tabPanel("UMAP - Outcome"),

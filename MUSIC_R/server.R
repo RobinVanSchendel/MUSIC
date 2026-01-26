@@ -151,8 +151,8 @@ function(input, output, session) {
     
     
     ggplot(df, aes(x = rowNr, y = fraction)) +
-      geom_hline(data = sds, aes(yintercept = mean+3*sd), linetype = "dashed", color = "grey30", inherit.aes = FALSE) +
-      geom_hline(data = sds, aes(yintercept = mean-3*sd), linetype = "dashed", color = "grey30", inherit.aes = FALSE) +
+      geom_hline(data = sds, aes(yintercept = mean+3*sd), linetype = "dashed", color = "grey30") +
+      geom_hline(data = sds, aes(yintercept = mean-3*sd), linetype = "dashed", color = "grey30") +
       geom_point(size = .5, alpha = .6) +
       facet_wrap2(~Type, scales = "free",
                   strip = strip_themed(
@@ -178,6 +178,8 @@ function(input, output, session) {
     plotY <- input$XYY
     
     df <- prepareXYData(con, plotX, plotY)
+    ##store xydata in a reactive
+    xydata(df)
     base_plot <- buildXYPlot(df, input, plotX, plotY)
     
     highlightPart <- getHighlightedGenes(df, input)
@@ -257,16 +259,13 @@ function(input, output, session) {
   
   ##for the hover
   output$hover_xy <- renderUI({
+    req(xydata())
     hover <- input$plot_xy
     if(is.null(hover)){
       return()
     }
-    ##need to get this data from an observe
-    con = db_con_genome_wide()
-    plotX <- input$XYX
-    plotY <- input$XYY
-    
-    df <- prepareXYData(con, plotX, plotY)
+    ##get the data from the reactive
+    df <- xydata()
     createHoverTooltip(hover, df)
   })
   
