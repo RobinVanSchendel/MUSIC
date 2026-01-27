@@ -11,6 +11,7 @@ function(input, output, session) {
   ##TODO: implement this to increase speed!
   xydata <- reactiveVal()
   umap_gene_data <- reactiveVal()
+  heatmap_data <- reactiveVal()
   
   # Reactive database connection
   db_con_genome_wide <- reactive({
@@ -63,6 +64,14 @@ function(input, output, session) {
                            brush = "plot_umap_focused_brush"))
   })
   
+  ##heat map plot
+  output$UIHeatmapPlot <- renderUI({
+    withSpinner(plotOutput("HeatmapPlot", height = input$plotHeight, width = getPlotWidth(input$plotWidth),
+                           hover = hoverOpts("plot_heatmap_hover", delay = 10, delayType = "debounce"),
+                           brush = brushOpts(id = "plot_heatmap_brush", resetOnNew = T),
+                           dblclick = "plot_heatmap_dblclick"))
+  })
+  
   
   ##volcano brush
   observeEvent(input$plot_volcano_brush, {
@@ -94,6 +103,7 @@ function(input, output, session) {
     ##for zooming purposes
   ranges_volcano_brush <- reactiveValues(x = NULL, y = NULL)
   ranges_xy_brush <- reactiveValues(x = NULL, y = NULL)
+  ranges_heatmap_brush <- reactiveValues(x = NULL, y = NULL)
   
   
   # Zoom on double-click
@@ -103,6 +113,10 @@ function(input, output, session) {
   # Zoom on double-click
   observeEvent(input$plot_xy_dblclick, {
     updateZoomRanges(input$plot_xy_brush, ranges_xy_brush)
+  })
+  # Zoom on double-click
+  observeEvent(input$plot_heatmap_dblclick, {
+    updateZoomRanges(input$plot_heatmap_brush, ranges_heatmap_brush)
   })
   
   
@@ -135,9 +149,9 @@ function(input, output, session) {
       req(db_con_genome_wide())
       con <- db_con_genome_wide()
       ##make this data static
-      print("prepareVolcanoData")
+      message("prepareVolcanoData Type",input$VolcanoType)
       volcano_data <- prepareVolcanoData(con, input$VolcanoType)
-      print("got prepareVolcanoData")
+      message("got prepareVolcanoData")
       volcanodata(volcano_data)
   })
   
@@ -152,9 +166,16 @@ function(input, output, session) {
   
   ##TODO change to only read in data when umap is needed
   observe({
-    message("Reading in umap_gene_data")
-    umap_data = read_in_umap_gene_data()
-    umap_gene_data(umap_data)
+    if(is.null(umap_gene_data())){
+      message("Reading in umap_gene_data")
+      umap_data = read_in_umap_gene_data()
+      umap_gene_data(umap_data)
+    }
+    if(is.null(heatmap_data())){
+      message("Reading in heatmap_data")
+      heatmap_df = read_in_heatmap_data()
+      heatmap_data(heatmap_df)
+    }
   })
   
   output$Waterfallplot <- renderPlot({
@@ -313,6 +334,40 @@ function(input, output, session) {
     final_plot
   })
   
+  ##heatmap plot
+  output$HeatmapPlot <- renderPlot({
+    req(heatmap_data())
+    heatmap = heatmap_data()
+    
+    ##convert to a matrix first, takes care of NA and limits (-2, 2)
+    matrix = convert_data_frame_to_matrix(heatmap)
+    
+    highlight_barcodes = c("Polq-2", "Polq-3", "Polq-5")
+    
+    ##retrieve a df in long format, but uses heatmap.2 for its ordering
+    ##currently uses integers to plot as that allows for additional components to be added to the plot
+    ##e.g. in (-10 - -1)
+    long_df = retrieve_long_format_sorted_by_heatmap(matrix)
+    
+    ggplot(long_df, aes(x=x_num, y = y_num, fill = log2fraction)) +
+      geom_tile() +
+      # Overlay highlighted barcodes
+      geom_tile(
+        data = long_df %>% filter(Barcode %in% highlight_barcodes),
+        color = "red", size = 0.25, fill = NA
+      ) +
+      scale_fill_gradientn(
+        colours = rev(brewer.pal(11, "RdBu")),
+        name = "log2 fraction"
+      ) +
+      ##ensure labels are there
+      scale_y_continuous(expand = c(0,0), breaks = 1:length(levels(long_df$Outcome_Alias)), labels = levels(long_df$Outcome_Alias)) +
+      scale_x_continuous(expand = c(0,0), breaks = 1:length(levels(long_df$Barcode)), labels = levels(long_df$Barcode)) +
+      theme_object() +
+      coord_cartesian(xlim = ranges_heatmap_brush$x, ylim = ranges_heatmap_brush$y) +
+      NULL
+  })
+  
   ##for the hover
   output$hover_xy <- renderUI({
     req(xydata())
@@ -354,14 +409,9 @@ function(input, output, session) {
     createHoverTooltip(hover, df)
   })
     
-    
-  
-  
   
   # Optional: observe tab selection
   observeEvent(input$tabs, {
-    if (input$tabs == "XY") {
-      # Add logic if needed when XY tab is selected
-    }
+    message(input$tabs," selected")
   })
 }
