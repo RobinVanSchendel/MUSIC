@@ -12,6 +12,7 @@ function(input, output, session) {
   xydata <- reactiveVal()
   umap_gene_data <- reactiveVal()
   heatmap_data <- reactiveVal()
+  barcode_data_focused <- reactiveVal()
   
   # Reactive database connection
   db_con_genome_wide <- reactive({
@@ -141,18 +142,41 @@ function(input, output, session) {
       con <- db_con_candidate()
       genes <- tbl(con, "barcodeCount") %>% select(Gene) %>% distinct() %>% collect() %>% pull()
       updatePickerInput(session, inputId = "highlightGeneFocused", choices = genes)
+      ##get all barcode info in barcode_data_focused
+      barcode_genes = tbl(con, "barcodeCount") %>% select(Gene,Barcode) %>% distinct() %>% collect()
+      barcode_data_focused(barcode_genes)
       print("update highlightGeneFocused finished")
     }
   })
   
   observeEvent(input$VolcanoType, {
-      req(db_con_genome_wide())
+      req(db_con_genome_wide(), input$tabs)
+      message("tabs found is:", input$tabs)
       con <- db_con_genome_wide()
       ##make this data static
-      message("prepareVolcanoData Type",input$VolcanoType)
+      message("prepareVolcanoData Type:",input$VolcanoType)
       volcano_data <- prepareVolcanoData(con, input$VolcanoType)
       message("got prepareVolcanoData")
       volcanodata(volcano_data)
+  })
+  
+  ##for when the genome wide volcano is chosen and the data is not yet loaded
+  ##Only happens the first time
+  ##Likely need to index the DB table, because it is very slow
+  observeEvent(input$tabs, {
+    req(db_con_genome_wide(),input$VolcanoType)
+    if(input$tabs != "Volcano"){
+      return()
+    }
+    ##do we need to load volcanodata?
+    if(is.null(volcanodata())){
+      con <- db_con_genome_wide()
+      message("prepareVolcanoData genome wide first attempt:",input$VolcanoType)
+      volcano_data <- prepareVolcanoData(con, input$VolcanoType)
+      message("got prepareVolcanoData")
+      volcanodata(volcano_data)
+    }
+    message("here we go:",input$tabs)
   })
   
   observeEvent(input$VolcanoFocusedType, {
@@ -342,20 +366,21 @@ function(input, output, session) {
     ##convert to a matrix first, takes care of NA and limits (-2, 2)
     matrix = convert_data_frame_to_matrix(heatmap)
     
-    highlight_barcodes = c("Polq-2", "Polq-3", "Polq-5")
+    if(!is.null(input$highlightGeneFocused)){
+      ##get the selected barcodes based on the gene
+      highlight_barcodes = barcode_data_focused() %>% filter(Gene %in% input$highlightGeneFocused) %>%
+        select(Barcode) %>% pull()
+    }
+    
     
     ##retrieve a df in long format, but uses heatmap.2 for its ordering
     ##currently uses integers to plot as that allows for additional components to be added to the plot
     ##e.g. in (-10 - -1)
     long_df = retrieve_long_format_sorted_by_heatmap(matrix)
     
-    ggplot(long_df, aes(x=x_num, y = y_num, fill = log2fraction)) +
+    plot <- ggplot(long_df, aes(x=x_num, y = y_num, fill = log2fraction)) +
       geom_tile() +
-      # Overlay highlighted barcodes
-      geom_tile(
-        data = long_df %>% filter(Barcode %in% highlight_barcodes),
-        color = "red", size = 0.25, fill = NA
-      ) +
+      
       scale_fill_gradientn(
         colours = rev(brewer.pal(11, "RdBu")),
         name = "log2 fraction"
@@ -366,6 +391,32 @@ function(input, output, session) {
       theme_object() +
       coord_cartesian(xlim = ranges_heatmap_brush$x, ylim = ranges_heatmap_brush$y) +
       NULL
+    
+    if(!is.null(input$highlightGeneFocused)){
+      ##get the highlight boxes
+      barcode_boxes <- long_df %>%
+        filter(Barcode %in% highlight_barcodes) %>%
+        group_by(Barcode) %>%
+        summarise(
+          xmin = min(x_num) - 0.5,
+          xmax = max(x_num) + 0.5,
+          ymin = min(y_num) - 0.5,
+          ymax = max(y_num) + 0.5,
+          .groups = "drop"
+        )
+      # Overlay highlighted barcodes
+      plot <- plot + 
+        geom_rect(
+          data = barcode_boxes,
+          aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+          fill = NA,
+          color = "red",
+          linewidth = 0.25,
+          inherit.aes = F
+        )
+    }
+    
+    plot
   })
   
   ##for the hover
