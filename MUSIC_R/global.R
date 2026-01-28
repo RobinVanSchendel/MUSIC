@@ -10,7 +10,11 @@ library(dplyr)
 library(tidyr)
 library(dbplyr)
 library(shinyWidgets)
+library(RColorBrewer)
 library(RSQLite)
+library(ggnewscale)
+library(shinyalert)
+library(tibble)
 library(ggh4x)
 library(ggplot2)
 library(shiny)
@@ -62,6 +66,8 @@ UMAP_GENE_COLORS = c("other" = "black", "HIT" = "red",
           "HR" = "purple",  "EJ" = "orange",       "NER" = "pink"  ,   "FA/ICL" ="hotpink1" ,
           "53BP1" = "gold2" ,  "MMR"  = 'violet',   
           "CONTROL" = "blue" , "TMEJ"  = "maroon" ,   "SSA"  = "brown"  ,   "RER" =  "magenta")
+
+HEATMAP_REPLICATE_COLORS = c("1" = "#BF9136", "2" = "#828330", "3" = "#226162")
 
 genome_wide_conn <- function(){
   if(!file.exists(GENOME_WIDE_DB)){

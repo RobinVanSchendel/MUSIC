@@ -47,7 +47,7 @@ function(input, output, session) {
   output$UIVolcanoplot <- renderUI({
     withSpinner(plotOutput("Volcanoplot", height = input$plotHeight, width = getPlotWidth(input$plotWidth),
                            hover = hoverOpts("plot_volcano", delay = 10, delayType = "debounce"),
-                           brush = "plot_volcano_brush",
+                           brush = brushOpts(id = "plot_volcano_brush", resetOnNew = T),
                            dblclick = "plot_volcano_dblclick"))
   })
   
@@ -55,7 +55,9 @@ function(input, output, session) {
   output$UIVolcanoFocusedplot <- renderUI({
     withSpinner(plotOutput("VolcanoFocusedplot", height = input$plotHeight, width = getPlotWidth(input$plotWidth),
                            hover = hoverOpts("plot_volcano_focused", delay = 10, delayType = "debounce"),
-                           brush = "plot_volcano_focused_brush"))
+                           brush = brushOpts(id = "plot_volcano_focused_brush", resetOnNew = T),
+                           dblclick = "plot_volcano_focused_dblclick"
+                           ))
   })
   
   ##umap-gene plot
@@ -105,6 +107,7 @@ function(input, output, session) {
   ranges_volcano_brush <- reactiveValues(x = NULL, y = NULL)
   ranges_xy_brush <- reactiveValues(x = NULL, y = NULL)
   ranges_heatmap_brush <- reactiveValues(x = NULL, y = NULL)
+  ranges_volcano_focused_brush <- reactiveValues(x = NULL, y = NULL)
   
   
   # Zoom on double-click
@@ -119,7 +122,10 @@ function(input, output, session) {
   observeEvent(input$plot_heatmap_dblclick, {
     updateZoomRanges(input$plot_heatmap_brush, ranges_heatmap_brush)
   })
-  
+  #zoom for plot_volcano_focused_brush
+  observeEvent(input$plot_volcano_focused_dblclick, {
+    updateZoomRanges(input$plot_volcano_focused_brush, ranges_volcano_focused_brush)
+  })
   
   # Reactive theme object
   theme_object <- reactive({
@@ -160,6 +166,19 @@ function(input, output, session) {
       volcanodata(volcano_data)
   })
   
+  ##Update the selectatble genes based on the tab selected
+  observeEvent(input$tabs, {
+    message("input tab|",input$tabs,"|")
+    if(input$tabs == "Heatmap"){
+      req(heatmap_data(), barcode_data_focused())
+      barcode = barcode_data_focused()
+      heatmap_barcodes = heatmap_data() %>% select(Barcode) %>% distinct() %>% pull()
+      genes = barcode %>% filter(Barcode %in% heatmap_barcodes) %>% 
+        select(Gene) %>% distinct() %>% pull()
+      updatePickerInput(session, inputId = "highlightGeneFocused", choices = genes)
+    }
+  })
+  
   ##for when the genome wide volcano is chosen and the data is not yet loaded
   ##Only happens the first time
   ##Likely need to index the DB table, because it is very slow
@@ -188,7 +207,6 @@ function(input, output, session) {
     volcanofocuseddata(volcano_focused_data)
   })
   
-  ##TODO change to only read in data when umap is needed
   observe({
     if(is.null(umap_gene_data())){
       message("Reading in umap_gene_data")
@@ -334,6 +352,8 @@ function(input, output, session) {
     #  brush = input$plot_volcano_brush
     #  print(brush)
     #}
+    
+    final_plot <- final_plot + coord_cartesian(xlim = ranges_volcano_focused_brush$x, ylim = ranges_volcano_focused_brush$y)
     final_plot
   })
   
@@ -367,16 +387,32 @@ function(input, output, session) {
     matrix = convert_data_frame_to_matrix(heatmap)
     
     if(!is.null(input$highlightGeneFocused)){
+      ##now get the Barcodes
       ##get the selected barcodes based on the gene
-      highlight_barcodes = barcode_data_focused() %>% filter(Gene %in% input$highlightGeneFocused) %>%
+      highlight_barcodes = barcode_data_focused() %>% filter(Gene %in% input$highlightGeneFocused) %>% 
         select(Barcode) %>% pull()
     }
-    
     
     ##retrieve a df in long format, but uses heatmap.2 for its ordering
     ##currently uses integers to plot as that allows for additional components to be added to the plot
     ##e.g. in (-10 - -1)
     long_df = retrieve_long_format_sorted_by_heatmap(matrix)
+    
+    ##get the replicat information in as well
+    replicate_info = heatmap %>% select(Outcome, Alias) %>% distinct() %>%
+      mutate(Outcome_Alias = paste(Outcome, Alias))
+    replicate_info = dplyr::left_join(long_df %>% select(Outcome_Alias, y_num) %>% distinct(), replicate_info, by = "Outcome_Alias") %>%
+      select(Alias, y_num) %>%
+      ##set at position -1
+      mutate(x_num = -1) %>%
+      ##name it Replicate, while leaving Alias intact
+      mutate(Replicate = Alias)
+    
+    nr_x_labels = 60
+    if(input$plotWidth > 0){
+      nr_x_labels = round(input$plotWidth/15)
+    }
+    nr_y_labels = round(input$plotHeight/15)
     
     plot <- ggplot(long_df, aes(x=x_num, y = y_num, fill = log2fraction)) +
       geom_tile() +
@@ -385,14 +421,58 @@ function(input, output, session) {
         colours = rev(brewer.pal(11, "RdBu")),
         name = "log2 fraction"
       ) +
+      ##separate scale for these tiles
+      ggnewscale::new_scale_fill() +
+      geom_tile(data = replicate_info, aes(x=x_num, y = y_num, fill = Replicate), inherit.aes = F) +
+      scale_fill_manual(values = HEATMAP_REPLICATE_COLORS) +
       ##ensure labels are there
-      scale_y_continuous(expand = c(0,0), breaks = 1:length(levels(long_df$Outcome_Alias)), labels = levels(long_df$Outcome_Alias)) +
-      scale_x_continuous(expand = c(0,0), breaks = 1:length(levels(long_df$Barcode)), labels = levels(long_df$Barcode)) +
+      scale_y_continuous(
+        expand = c(0, 0),
+        
+        breaks = function(lims) {
+          n <- length(levels(long_df$Outcome_Alias))
+          
+          lo <- max(1, ceiling(lims[1]))
+          hi <- min(n, floor(lims[2]))
+          
+          # target ~15 labels
+          step <- max(1, ceiling((hi - lo + 1) / nr_y_labels))
+          
+          seq(lo, hi, by = step)
+        },
+        
+        labels = function(y) {
+          levels(long_df$Outcome_Alias)[y]
+        }
+      ) +
+      #scale_y_continuous(expand = c(0,0), breaks = 1:length(levels(long_df$Outcome_Alias)), labels = levels(long_df$Outcome_Alias)) +
+      #scale_x_continuous(expand = c(0,0), breaks = 1:length(levels(long_df$Barcode)), labels = levels(long_df$Barcode)) +
+      #scale_x_continuous(expand = c(0,0), labels = levels(long_df$Barcode)) +
+      scale_x_continuous(
+        expand = c(0, 0),
+        
+        breaks = function(lims) {
+          n <- length(levels(long_df$Barcode))
+          
+          # visible range
+          lo <- max(1, ceiling(lims[1]))
+          hi <- min(n, floor(lims[2]))
+          
+          # target ~15 labels max
+          step <- max(1, ceiling((hi - lo + 1) / nr_x_labels))
+          
+          seq(lo, hi, by = step)
+        },
+        
+        labels = function(x) {
+          levels(long_df$Barcode)[x]
+        }
+      ) +
       theme_object() +
       coord_cartesian(xlim = ranges_heatmap_brush$x, ylim = ranges_heatmap_brush$y) +
       NULL
     
-    if(!is.null(input$highlightGeneFocused)){
+    if(!is.null(input$highlightGeneFocused) && length(highlight_barcodes) > 0){
       ##get the highlight boxes
       barcode_boxes <- long_df %>%
         filter(Barcode %in% highlight_barcodes) %>%

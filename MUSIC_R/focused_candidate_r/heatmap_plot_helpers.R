@@ -1,5 +1,6 @@
 read_in_heatmap_data <- function(){
-  df = read.table(file = HEATMAP_FILE, header = T, sep = "\t", fill = T)
+  df = read.table(file = HEATMAP_FILE, header = T, sep = "\t", fill = T) %>%
+    mutate(Alias = gsub("MBsub","",Alias))
   df
 }
 
