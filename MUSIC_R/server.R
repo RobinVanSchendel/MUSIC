@@ -196,12 +196,12 @@ function(input, output, session) {
   ##Update the selectatble genes based on the tab selected
   observeEvent(input$tabs, {
     message("input tab|",input$tabs,"|")
+    ##TODO: this is probably not only for heatmap
     if(input$tabs == "Heatmap"){
-      req(heatmap_data(), barcode_data_focused())
-      barcode = barcode_data_focused()
-      heatmap_barcodes = heatmap_data() %>% select(Barcode) %>% distinct() %>% pull()
-      genes = barcode %>% filter(Barcode %in% heatmap_barcodes) %>% 
-        select(Gene) %>% distinct() %>% pull()
+      genes = heatmap_data() %>% select(Gene) %>% distinct() %>% pull()
+      updatePickerInput(session, inputId = "highlightGeneFocused", choices = genes)
+    } else{
+      genes = barcode_data_focused() %>% select(Gene) %>% distinct() %>% pull()
       updatePickerInput(session, inputId = "highlightGeneFocused", choices = genes)
     }
   })
@@ -226,7 +226,6 @@ function(input, output, session) {
   })
   
   observeEvent(input$VolcanoFocusedType, {
-    req(input$tabs == "Volcano ")
     req(db_con_candidate())
     con <- db_con_candidate()
     message("prepareVolcanoFocusedData: ", input$VolcanoFocusedType)
