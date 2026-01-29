@@ -11,6 +11,7 @@ function(input, output, session) {
   ##TODO: implement this to increase speed!
   xydata <- reactiveVal()
   umap_gene_data <- reactiveVal()
+  umap_outcome_data <- reactiveVal()
   heatmap_data <- reactiveVal()
   barcode_data_focused <- reactiveVal()
   
@@ -67,6 +68,13 @@ function(input, output, session) {
                            brush = "plot_umap_focused_brush"))
   })
   
+  ##umap-outcome plot
+  output$UIUmapOutcomePlot <- renderUI({
+    withSpinner(plotOutput("UmapOutcomePlot", height = input$plotHeight, width = getPlotWidth(input$plotWidth),
+                           hover = hoverOpts("plot_umap_outcome_focused", delay = 10, delayType = "debounce"),
+                           brush = "plot_umap_outcome_brush"))
+  })
+  
   ##heat map plot
   output$UIHeatmapPlot <- renderUI({
     withSpinner(plotOutput("HeatmapPlot", height = input$plotHeight, width = getPlotWidth(input$plotWidth),
@@ -74,6 +82,20 @@ function(input, output, session) {
                            brush = brushOpts(id = "plot_heatmap_brush", resetOnNew = T),
                            dblclick = "plot_heatmap_dblclick"))
   })
+  
+  
+  
+  ##dna plot
+  output$UIDNAPlot <- renderUI({
+    withSpinner(plotOutput("DNAPlot", height = 150, width = getPlotWidth(input$plotWidth)))
+  })
+  
+  output$DNAPlot <- renderPlot({
+    req(input$VolcanoFocusedType)
+    outcome = input$VolcanoFocusedType
+    plot_event_dna(outcome)
+  })
+  
   
   
   ##volcano brush
@@ -201,10 +223,11 @@ function(input, output, session) {
   observeEvent(input$VolcanoFocusedType, {
     req(db_con_candidate())
     con <- db_con_candidate()
-    print("prepareVolcanoFocusedData")
+    message("prepareVolcanoFocusedData: ", input$VolcanoFocusedType)
     ##make this data staic
     volcano_focused_data <- prepareVolcanoFocusedData(con, input$VolcanoFocusedType)
     volcanofocuseddata(volcano_focused_data)
+    message("prepareVolcanoFocusedData done")
   })
   
   observe({
@@ -217,6 +240,11 @@ function(input, output, session) {
       message("Reading in heatmap_data")
       heatmap_df = read_in_heatmap_data()
       heatmap_data(heatmap_df)
+    }
+    if(is.null(umap_outcome_data())){
+      message("Reading in umap_outcome_data")
+      outcome_df = read_in_umap_outcome_data()
+      umap_outcome_data(outcome_df)
     }
   })
   
@@ -329,8 +357,6 @@ function(input, output, session) {
   output$VolcanoFocusedplot <- renderPlot({
     req(volcanofocuseddata())
     
-    plotType = input$VolcanoType
-    
     df <- volcanofocuseddata()
     highlightPart <- getHighlightedGenes(df, input)
     topGenes <- getTopGenesVolcano(df, input, plotType)
@@ -368,7 +394,6 @@ function(input, output, session) {
     
     #  geom_text_repel(data=subset(df, Gene != "NonTargeting"), aes(label = Gene), max.overlaps = 100)+
     final_plot = final_plot +
-      theme_object() +
       scale_color_manual(values = UMAP_GENE_COLORS)+
       ##remove legends for size and alpha
       guides(size = "none", alpha = "none")+
@@ -376,6 +401,19 @@ function(input, output, session) {
       theme_object() +
       NULL
     final_plot
+  })
+  
+  ##UMap outcome plot
+  output$UmapOutcomePlot <- renderPlot({
+    req(umap_outcome_data())
+    message("UmapOutcomePlot")
+    df = umap_outcome_data()
+    
+    ggplot(df) +
+      geom_point(aes(x = X2, y = X1, fill = Type), size = 5, alpha = 0.3, shape = 21) +
+      scale_fill_manual(values = UMAP_OUTCOME_COLORS) +
+      theme_object() +
+      NULL
   })
   
   ##heatmap plot

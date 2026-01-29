@@ -22,9 +22,9 @@ generateTabs <- function(data_input) {
                 tabPanel("Heatmap",h3("Heat map info..."),uiOutput("UIHeatmapPlot")),
                 tabPanel("UMAP - Gene", h3("a UMAP representation of all hits, same as Figure x in our manuscript"),uiOutput("UIUmapPlot"), uiOutput("hover_umap_gene"),
                          DTOutput("umap_gene_table")),
-                tabPanel("UMAP - Outcome"),
-                tabPanel("Volcano ", uiOutput("UIVolcanoFocusedplot"), uiOutput("hover_volcano_focused")),
-                selected = "Heatmap"
+                tabPanel("UMAP - Outcome",h3("Umap outcome plot"),uiOutput("UIUmapOutcomePlot")),
+                tabPanel("Volcano ", uiOutput("UIVolcanoFocusedplot"), uiOutput("hover_volcano_focused"), uiOutput("UIDNAPlot")),
+                selected = "UMAP - Outcome"
     )
   }
 }

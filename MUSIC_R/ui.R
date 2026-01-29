@@ -152,9 +152,9 @@ fluidPage(
                    condition = "input.tabs == 'Volcano '",
                    pickerInput(
                      inputId = "VolcanoFocusedType",
-                     label = "Select Type(s):",
-                     choices = FOCUSED_TYPES,
-                     selected = FOCUSED_TYPES[1],
+                     label = "Select Outcome(s):",
+                     choices = FOCUSED_OUTCOMES,
+                     selected = FOCUSED_OUTCOMES[2],
                      options = list(
                        `actions-box` = TRUE, 
                        size = 10,
@@ -171,7 +171,7 @@ fluidPage(
                  ),
                  wellPanel(
                    h4("Highlight Top Genes"),
-                   numericInput("highlightTop", "Highlight top N genes (based on x-axis only!): ", value = 100),
+                   numericInput("highlightTop", "Highlight top N genes: ", value = 10),
                    prettyCheckboxGroup(inputId = "highlightShow", label = "Direction of top genes to highlight:", inline = T, 
                                       choices = c("Reduced" = "down", "Increased" = "up"), selected =  c("down","up"), status = "primary"),
                  ),

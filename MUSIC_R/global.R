@@ -12,6 +12,7 @@ library(dbplyr)
 library(shinyWidgets)
 library(RColorBrewer)
 library(RSQLite)
+library(stringr)
 library(ggnewscale)
 library(shinyalert)
 library(tibble)
@@ -32,12 +33,15 @@ source("genome_wide_r/waterfall_plot_helpers.R")
 source("focused_candidate_r/volcano_focused_plot_helpers.R")
 source("focused_candidate_r/umap_gene_plot_helpers.R")
 source("focused_candidate_r/heatmap_plot_helpers.R")
+source("focused_candidate_r/plot_dna_event.R")
+source("focused_candidate_r/umap_outcome_plot_helpers.R")
 
 
 GENOME_WIDE_DB = "Z:/Marco/Temp/Backup D/Temp/MBdata/Processed_Again/MBCrisprMBAgain_1_1.db" ##still change
 CANDIDATE_DB = "Z:/Marco/CustomClonedLibrary/oPools seq files/MBCrisprMBSubscreeen_Full_1MHfSNVtop150.db"   # new, test if same output as originalis a
 
 UMAP_GENE_FILE = "data/dfTest.txt"
+UMAP_OUTCOME_FILE = "data/outcomeUmapcoordinates.txt"
 HEATMAP_FILE = "data/20240930-145847_ForUMAP_testNT.txt"
 
 ##only used in waterfall plots for now
@@ -68,6 +72,24 @@ UMAP_GENE_COLORS = c("other" = "black", "HIT" = "red",
           "CONTROL" = "blue" , "TMEJ"  = "maroon" ,   "SSA"  = "brown"  ,   "RER" =  "magenta")
 
 HEATMAP_REPLICATE_COLORS = c("1" = "#BF9136", "2" = "#828330", "3" = "#226162")
+
+UMAP_OUTCOME_COLORS = c(
+  "B-DEL_10p" = "palegreen4",
+  "B-DEL_>10" = "palegreen4",
+  "B-DEL_4-10" = "palegreen3",
+  "B-DEL_1-3" = "palegreen2",
+  "D-DEL_10p" = "dodgerblue4",
+  "D-DEL_4-10" = "dodgerblue3",   
+  "D-DEL_1-3" = "dodgerblue",   
+  "DELINS" = "darkslategray3",       
+  "HDR" = "hotpink1",          
+  "INSERTION_1bp" = "orange",
+  "INSERTION" = "gold2",   
+  "PQ_DELETION" = "maroon", 
+  "TINS" = "red",
+  "SNV" = "darkslategray4"
+)
+
 
 genome_wide_conn <- function(){
   if(!file.exists(GENOME_WIDE_DB)){
@@ -106,10 +128,17 @@ if(!is.null(candidate_connection)){
     summarise(nrBarcodes = n()) %>% 
     collect()
   
-  FOCUSED_TYPES <- tbl(candidate_connection, "outcomes") %>% select(outcomeTop) %>%
+  FOCUSED_OUTCOMES_MEAN <- tbl(candidate_connection, "outcomes") %>% 
+    select(outcomeTop, mean, Alias) %>%
     distinct() %>%
-    collect() %>%
-    pull()
+    group_by(outcomeTop) %>%
+    summarise(mean = mean(mean)) %>%
+    arrange(desc(mean)) %>%
+    collect() 
+  
+  FOCUSED_OUTCOMES = setNames(FOCUSED_OUTCOMES_MEAN$outcomeTop, 
+                              paste(FOCUSED_OUTCOMES_MEAN$outcomeTop, round(FOCUSED_OUTCOMES_MEAN$mean, 5)))
+  
 } else{
   FOCUSED_GENE_INFO = NULL
   FOCUSED_TYPES = NULL
