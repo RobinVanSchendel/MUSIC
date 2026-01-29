@@ -5,6 +5,11 @@ prepareVolcanoFocusedData <- function(con, type) {
     mutate(log2fraction = log2(fraction/mean))
 }
 
+
+getHighlightedFocusedGenes <- function(df, input) {
+  df %>% filter(Gene %in% input$highlightGeneFocused)
+}
+
 getTopGenesVolcano <- function(df, input, plotX) {
   ##at the moment on log2fraction
   dfTop <- df %>% group_by(Alias) %>% slice_max(order_by = log2fraction, n = input$highlightTop)

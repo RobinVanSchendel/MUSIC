@@ -363,7 +363,7 @@ function(input, output, session) {
     req(volcanofocuseddata())
     
     df <- volcanofocuseddata()
-    highlightPart <- getHighlightedGenes(df, input)
+    highlightPart <- getHighlightedFocusedGenes(df, input)
     topGenes <- getTopGenesVolcano(df, input, plotType)
     
     base_plot <- ggplot(data = df, aes(y = mutEvents, x = log2fraction)) +
