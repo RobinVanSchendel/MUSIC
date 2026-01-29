@@ -1,6 +1,9 @@
 read_in_heatmap_data <- function(){
   df = read.table(file = HEATMAP_FILE, header = T, sep = "\t", fill = T) %>%
-    mutate(Alias = gsub("MBsub","",Alias))
+    mutate(
+           Alias = gsub("MBsub","",Alias),
+           ##fix the gene names as they are now the barcodes instead of the gene
+           Gene  = gsub("-[^-]*$", "", Gene))
   df
 }
 

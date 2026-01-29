@@ -75,6 +75,11 @@ function(input, output, session) {
                            brush = "plot_umap_outcome_brush"))
   })
   
+  
+  output$UIUmapOutcomeGeneSpecificPlot <- renderUI({
+    withSpinner(plotOutput("UmapOutcomeGeneSpecificPlot", height = input$plotHeight, width = getPlotWidth(input$plotWidth)))
+  })
+  
   ##heat map plot
   output$UIHeatmapPlot <- renderUI({
     withSpinner(plotOutput("HeatmapPlot", height = input$plotHeight, width = getPlotWidth(input$plotWidth),
@@ -221,6 +226,7 @@ function(input, output, session) {
   })
   
   observeEvent(input$VolcanoFocusedType, {
+    req(input$tabs == "Volcano ")
     req(db_con_candidate())
     con <- db_con_candidate()
     message("prepareVolcanoFocusedData: ", input$VolcanoFocusedType)
@@ -409,10 +415,84 @@ function(input, output, session) {
     message("UmapOutcomePlot")
     df = umap_outcome_data()
     
-    ggplot(df) +
+    left_plot <- ggplot(df) +
       geom_point(aes(x = X2, y = X1, fill = Type), size = 5, alpha = 0.3, shape = 21) +
       scale_fill_manual(values = UMAP_OUTCOME_COLORS) +
       theme_object() +
+      NULL
+    
+    top_r_plot <- ggplot(df) +
+      geom_point(aes(x = X2, y = X1, color = DelSize), size = 5, alpha = 0.3) +
+      scale_color_gradient(low = "grey95", high = "steelblue4", limits=c(0, 40), oob = scales::squish) +
+      theme_object() +
+      NULL
+    
+    bottom_r_plot <- ggplot(df) +
+      geom_point(aes(x = X2, y = X1, color = MHDel), size = 5, alpha = 0.3) +
+      scale_color_gradient(low = "grey95", high = "maroon4", limits=c(0, 4), oob = scales::squish) +
+      theme_object() +
+      NULL
+    
+    right_col <- grid.arrange(
+      top_r_plot,
+      bottom_r_plot,
+      ncol = 1
+    )
+    ##make the complete arrangement
+    grid.arrange(
+      left_plot,
+      right_col,
+      ncol = 2,
+      widths = c(2, 1)  # left plot wider
+    )
+  })
+  
+  ##reactive for umap outcome specific plot
+  final_umap_gene_specific_data <- reactive({
+    ##only when this tab is selected
+    req(input$tabs == "UMAP - Outcome")
+    req(
+      umap_outcome_data(),
+      db_con_candidate(),
+      input$highlightGeneFocused
+    )
+    
+    message("retrieving data for umap_gene_specific")
+    hm_data <- read_in_umap_gene_specific_data(
+      db_con_candidate(),
+      input$highlightGeneFocused
+    )
+    message("retrieved data for umap_gene_specific ", nrow(hm_data))
+    
+    build_umap_gene_specific_data(
+      umap_df = umap_outcome_data(),
+      hm_data = hm_data,
+      genes    = input$highlightGeneFocused
+    )
+  })
+  
+  ##outcome specific plot
+  output$UmapOutcomeGeneSpecificPlot <- renderPlot({
+    req(final_umap_gene_specific_data())
+   
+    final_data = final_umap_gene_specific_data()
+    
+    ggplot(final_data, aes(x = X2, y = X1, color = Pvalue)) +
+      geom_point(data = final_data %>% filter(is.na(log2fraction)), aes(shape="NA"), shape = 21, size = 1.5, fill = "white", alpha = 0.3) +
+      geom_point(alpha = 0.3, shape=21, aes_string(col = "log2fraction", size = "Pvalue", fill = "log2fraction")) +
+      scale_fill_gradient2('GeneLog2fc', na.value="white", low = "navy", mid = "grey95", high = "red", midpoint = 0, limits=c(-2, 2), oob = scales::squish)+ 
+      scale_colour_gradient2('GeneLog2fc', na.value="black", low = "navy", mid = "grey95", high = "red", midpoint = 0, limits=c(-2, 2), oob = scales::squish)+ #log2fc
+      scale_size_area(
+        max_size = 12,
+        breaks = c(1,2.5,7.5,25,75),
+        labels = c("1","2.5","7.5","25","75+"),
+        guide = "legend",
+        limits = c(1,75),
+        oob = scales::squish
+      ) +
+      facet_wrap(~Gene, ncol = 3) +
+      theme_object() +
+      ggtitle("Umap Outcome Specific Gene(s)") +
       NULL
   })
   
@@ -427,8 +507,8 @@ function(input, output, session) {
     if(!is.null(input$highlightGeneFocused)){
       ##now get the Barcodes
       ##get the selected barcodes based on the gene
-      highlight_barcodes = barcode_data_focused() %>% filter(Gene %in% input$highlightGeneFocused) %>% 
-        select(Barcode) %>% pull()
+      highlight_barcodes = heatmap %>% filter(Gene %in% input$highlightGeneFocused) %>% 
+        select(Barcode) %>% distinct() %>% pull()
     }
     
     ##retrieve a df in long format, but uses heatmap.2 for its ordering
