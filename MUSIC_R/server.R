@@ -34,7 +34,8 @@ function(input, output, session) {
   output$UIWaterfall <- renderUI({
     withSpinner(plotOutput("Waterfallplot", height = input$plotHeight, width = getPlotWidth(input$plotWidth),
                            hover = hoverOpts("plot_waterfall", delay = 10, delayType = "debounce"),
-                           brush = "plot_waterfallplot_brush"))
+                           brush = brushOpts(id = "plot_waterfall_brush", resetOnNew = T),
+                           dblclick = "plot_waterfall_dblclick"))
   })
   
   # Render UI for XY plot
@@ -145,6 +146,7 @@ function(input, output, session) {
   ranges_xy_brush <- reactiveValues(x = NULL, y = NULL)
   ranges_heatmap_brush <- reactiveValues(x = NULL, y = NULL)
   ranges_volcano_focused_brush <- reactiveValues(x = NULL, y = NULL)
+  ranges_waterfall_brush <- reactiveValues(x = NULL, y = NULL)
   
   
   # Zoom on double-click
@@ -163,6 +165,12 @@ function(input, output, session) {
   observeEvent(input$plot_volcano_focused_dblclick, {
     updateZoomRanges(input$plot_volcano_focused_brush, ranges_volcano_focused_brush)
   })
+  
+  # Zoom on double-click waterfall
+  observeEvent(input$plot_waterfall_dblclick, {
+    updateZoomRanges(input$plot_waterfall_brush, ranges_waterfall_brush)
+  })
+  
   
   # Reactive theme object
   theme_object <- reactive({
@@ -336,7 +344,7 @@ function(input, output, session) {
         geom_text_repel(data = highlight, aes(label = Gene), color = "blue", size = 8)
     }
     
-    p
+    p + coord_cartesian(xlim = ranges_waterfall_brush$x, ylim = ranges_waterfall_brush$y)
   })
   
   
