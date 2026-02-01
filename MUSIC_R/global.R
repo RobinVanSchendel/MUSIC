@@ -43,11 +43,28 @@ CANDIDATE_DB = "Z:/Marco/CustomClonedLibrary/oPools seq files/MBCrisprMBSubscree
 UMAP_GENE_FILE = "data/dfTest.txt"
 UMAP_OUTCOME_FILE = "data/outcomeUmapcoordinates.txt"
 HEATMAP_FILE = "data/20240930-145847_ForUMAP_testNT.txt"
+WATERFALL_FILE = "data/TableS1_Genome-wide_MUSIC.txt"
 
 ##only used in waterfall plots for now
-GENOME_WIDE_TYPES = c( "INSERTION_1bp","LARGE_DELETION",
-                       "DELINS","HDR",
-                       "PQ_DELETION" ,"TINS")
+GENOME_WIDE_TYPES = c( "Insertion (1bp)","Deletion (≥15bp)",
+                       "Delins","Homology-directed repair",
+                       "POLQ-deletion" ,"Templated insertions")
+
+##ensure the waterfall types are coloured
+WATERFALL_COLORS = setNames(c(
+  "#FF8C00", "#124E8B","#05878C","#EC71A7", "#B03060", "#E6332A"),
+  GENOME_WIDE_TYPES
+)
+
+##Pathway colors
+WATERFALL_PATHWAY_COLORS = c("unassigned" = "#CC0000", "HIT" = "#CC0000",
+                             "BER/SSBR" = "khaki3",  "FORK QC" = "forestgreen",
+                             "HR" = "purple",  "c-NHEJ" = "darkorange",       "NER" = "pink"  ,   "FA/ICL" ="hotpink1" ,
+                             "53BP1" = "gold2" ,  "MMR"  = 'violet',   
+                             "CONTROL" = "blue" , "TMEJ"  = "maroon" ,   "SSA"  = "brown"  ,   "RER" =  "magenta")
+
+##for waterfall plot
+WATERFALL_SD_LIMIT = 2.5
 
 GENOME_WIDE_LABEL_MAP <- c(
   MB01 = "Target 1 - Replicate 1",

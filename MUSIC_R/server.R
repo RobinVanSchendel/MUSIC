@@ -8,8 +8,8 @@ function(input, output, session) {
   ##store some data
   volcanodata <- reactiveVal()
   volcanofocuseddata <- reactiveVal()
-  ##TODO: implement this to increase speed!
   xydata <- reactiveVal()
+  annotated_waterfall <- reactiveVal()
   umap_gene_data <- reactiveVal()
   umap_outcome_data <- reactiveVal()
   heatmap_data <- reactiveVal()
@@ -101,7 +101,17 @@ function(input, output, session) {
     plot_event_dna(outcome)
   })
   
-  
+  ##waterfall data
+  observeEvent(input$waterfall_type, {
+    df <- prepareWaterfallData() %>%
+      filter(Type %in% input$waterfall_type)
+    df_annotated <- annotate_waterfall_data(
+      df,
+      sdLimit = WATERFALL_SD_LIMIT   # make this adjustable?
+    )
+    
+    annotated_waterfall(df_annotated)
+  })
   
   ##volcano brush
   observeEvent(input$plot_volcano_brush, {
@@ -201,6 +211,7 @@ function(input, output, session) {
       genes = heatmap_data() %>% select(Gene) %>% distinct() %>% pull()
       updatePickerInput(session, inputId = "highlightGeneFocused", choices = genes)
     } else{
+      req(barcode_data_focused())
       genes = barcode_data_focused() %>% select(Gene) %>% distinct() %>% pull()
       updatePickerInput(session, inputId = "highlightGeneFocused", choices = genes)
     }
@@ -254,51 +265,80 @@ function(input, output, session) {
   })
   
   output$Waterfallplot <- renderPlot({
-    req(input$waterfall_type, db_con_genome_wide())
-    con <- db_con_genome_wide()
-    df <- prepareWaterfallData(con, input)
+    req(input$waterfall_type)
+    df_plot <- annotated_waterfall()
+    req(df_plot)
     
-    df <- df %>% group_by(Alias, Type) %>%
-      arrange(desc(fraction)) %>%
-      mutate(rowNr = row_number()) %>%
-      ungroup()
+    sd_lines <- waterfall_sd_lines(df_plot)
     
-    sds = df %>% group_by(Alias, Type) %>%
-      summarise(mean = mean(fraction), sd = sd(fraction))
+    WATERFALL_COLORS <- WATERFALL_COLORS[names(WATERFALL_COLORS) %in% input$waterfall_type]
     
-    ##ensure order is correct
-    #levels = c("")
-    #df$Type = as.factor(df$Type, levels = c())
-    ##ensure the waterfall types are coloured
-    WATERFALL_TYPES = setNames(c(
-      "#FF8C00", "#124E8B","#05878C","#EC71A7", "#B03060", "#E6332A"),
-      GENOME_WIDE_TYPES
-    )
-    #only keep selected types
-    WATERFALL_TYPES <- WATERFALL_TYPES[names(WATERFALL_TYPES) %in% input$waterfall_type]
+    highlight = df_plot %>% filter(Gene %in% input$highlightGene)
     
-    df$Type = factor(df$Type, levels = names(WATERFALL_TYPES))
-    sds$Type = factor(sds$Type, levels = names(WATERFALL_TYPES))
+    p <- ggplot(df_plot, aes(x = RankUp, y = meanLFC)) +
+      
+      geom_hline(
+        data = sd_lines,
+        aes(yintercept = mean_lfc + 2.5 * sd_lfc),
+        linetype = "dashed",
+        color = "grey30"
+      ) +
+      geom_hline(
+        data = sd_lines,
+        aes(yintercept = mean_lfc - 2.5 * sd_lfc),
+        linetype = "dashed",
+        color = "grey30"
+      ) +
+      
+      geom_point(
+        data = df_plot %>% filter(!hit),
+        color = "grey70",
+        size = 1,
+        alpha = 0.4
+      ) +
+      
+      geom_point(
+        data = df_plot %>% filter(hit, !assigned),
+        aes(color = Pathway1),
+        size = 2,
+        alpha = 0.4
+      ) +
+      
+      geom_point(
+        data = df_plot %>% filter(hit, assigned),
+        aes(color = Pathway1),
+        size = 2,
+        alpha = 0.8
+      ) +
+      
+      geom_text_repel(
+        data = df_plot %>% filter(hit, assigned),
+        aes(label = Gene, color = Pathway1),
+        show.legend = FALSE,
+        size = 8,
+        max.overlaps = Inf,
+        seed = 123,
+        force = 0.75,
+        force_pull = 5,
+        nudge_x = 0.2,
+        nudge_y = 0.2
+      ) +
+      
+      scale_color_manual(values = WATERFALL_PATHWAY_COLORS) +
+      facet_wrap2(~Type, strip = strip_themed(
+        background_x = elem_list_rect(fill = WATERFALL_COLORS, color = "black"),
+        text_x = elem_list_text(color = "white", face = "bold")
+      )) +
+      theme_object()
     
+    if(nrow(highlight) > 0){
+      p <- p + geom_point(data = highlight, color = "blue", size = 4) +
+        geom_text_repel(data = highlight, aes(label = Gene), color = "blue", size = 8)
+    }
     
-    ggplot(df, aes(x = rowNr, y = fraction)) +
-      geom_hline(data = sds, aes(yintercept = mean+3*sd), linetype = "dashed", color = "grey30") +
-      geom_hline(data = sds, aes(yintercept = mean-3*sd), linetype = "dashed", color = "grey30") +
-      geom_point(size = .5, alpha = .6) +
-      facet_wrap2(~Type, scales = "free",
-                  strip = strip_themed(
-                    background_x = elem_list_rect(
-                      fill = WATERFALL_TYPES,
-                      color = "black"
-                    ),
-                    text_x = elem_list_text(
-                      color = "white",
-                      face  = "bold"
-                    ))
-                 ) +
-      theme_object() +
-      NULL
+    p
   })
+  
   
   
   # Render XY plot
