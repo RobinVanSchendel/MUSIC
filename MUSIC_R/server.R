@@ -476,19 +476,19 @@ function(input, output, session) {
     df = umap_outcome_data()
     
     left_plot <- ggplot(df) +
-      geom_point(aes(x = X2, y = X1, fill = Type), size = 5, alpha = 0.3, shape = 21) +
+      geom_point(aes(x = X2, y = X1, fill = Type), size = 5, alpha = 0.6, shape = 21) +
       scale_fill_manual(values = UMAP_OUTCOME_COLORS) +
       theme_object() +
       NULL
     
     top_r_plot <- ggplot(df) +
-      geom_point(aes(x = X2, y = X1, color = DelSize), size = 5, alpha = 0.3) +
+      geom_point(aes(x = X2, y = X1, color = DelSize), size = 5, alpha = 0.6) +
       scale_color_gradient(low = "grey95", high = "steelblue4", limits=c(0, 40), oob = scales::squish) +
       theme_object() +
       NULL
     
     bottom_r_plot <- ggplot(df) +
-      geom_point(aes(x = X2, y = X1, color = MHDel), size = 5, alpha = 0.3) +
+      geom_point(aes(x = X2, y = X1, color = MHDel), size = 5, alpha = 0.6) +
       scale_color_gradient(low = "grey95", high = "maroon4", limits=c(0, 4), oob = scales::squish) +
       theme_object() +
       NULL
