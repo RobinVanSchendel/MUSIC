@@ -588,9 +588,9 @@ function(input, output, session) {
     
     nr_x_labels = 60
     if(input$plotWidth > 0){
-      nr_x_labels = round(input$plotWidth/15)
+      nr_x_labels = round(input$plotWidth/10)
     }
-    nr_y_labels = round(input$plotHeight/15)
+    nr_y_labels = round(input$plotHeight/12)
     
     plot <- ggplot(long_df, aes(x=x_num, y = y_num, fill = log2fraction)) +
       geom_tile() +

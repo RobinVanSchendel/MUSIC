@@ -8,7 +8,7 @@ fluidPage(
                    selected = 1),
                  hr(),
                  sliderInput("plotHeight", "Plot height (# pixels): ",
-                             value = 600, min = 0, max = 5000, step = 50
+                             value = 600, min = 0, max = 8000, step = 50
                  ),
                  sliderInput("plotWidth", "Plot width (# pixels, 0 = 100%):", 
                              value = 0, min = 0, max = 5000, step = 50
