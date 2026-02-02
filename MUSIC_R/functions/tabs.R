@@ -14,7 +14,7 @@ generateTabs <- function(data_input) {
                 tabPanel("Waterfall", h3("Aggregated Z-score for each gene for various outcomes"), uiOutput("UIWaterfall")),
                 tabPanel("XY", h3("XY plot is meant to quickly plot if a Gene deviates based on two outcomes types"), uiOutput("UIXYplot"), uiOutput("hover_xy"), DTOutput("xy_table")),
                 tabPanel("Volcano", h3("Volcano plot for each outcome type"), uiOutput("UIVolcanoplot"), uiOutput("hover_volcano"), h3("Selected Data Points"), DTOutput("volcano_table")),
-                selected = "Welcome"
+                selected = "XY"
     )
   } else {
     tabsetPanel(id = "tabs",

@@ -102,6 +102,17 @@ function(input, output, session) {
     plot_event_dna(outcome)
   })
   
+  ##xy data
+  observeEvent(list(input$XYX, input$XYY),{
+    con <- db_con_genome_wide()
+    plotX <- input$XYX
+    plotY <- input$XYY
+    
+    df <- prepareXYData(con, plotX, plotY)
+    
+    xydata(df)
+  })
+  
   ##waterfall data
   observeEvent(input$waterfall_type, {
     df <- prepareWaterfallData() %>%
@@ -347,21 +358,20 @@ function(input, output, session) {
         geom_text_repel(data = highlight, aes(label = Gene), color = "blue", size = 8)
     }
     
-    p + coord_cartesian(xlim = ranges_waterfall_brush$x, ylim = ranges_waterfall_brush$y)
+    p + scale_x_continuous(limits = ranges_waterfall_brush$x) +
+      scale_y_continuous(limits = ranges_waterfall_brush$y)
   })
   
   
   
   # Render XY plot
   output$XYplot <- renderPlot({
-    req(db_con_genome_wide())
-    con <- db_con_genome_wide()
+    req(xydata())
+    
+    df = xydata()
     plotX <- input$XYX
     plotY <- input$XYY
     
-    df <- prepareXYData(con, plotX, plotY)
-    ##store xydata in a reactive
-    xydata(df)
     base_plot <- buildXYPlot(df, input, plotX, plotY)
     
     highlightPart <- getHighlightedGenes(df, input)

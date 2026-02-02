@@ -5,7 +5,7 @@ fluidPage(
     sidebarPanel(
                  radioButtons("data_input", "Select MUSIC data set:",
                    choices = list("Genome Wide" = 1,"Focused Candidate" = 2),
-                   selected = 2),
+                   selected = 1),
                  hr(),
                  sliderInput("plotHeight", "Plot height (# pixels): ",
                              value = 600, min = 0, max = 5000, step = 50
@@ -95,7 +95,7 @@ fluidPage(
                      inputId = "XYX", 
                      label = "Select outcome type (x-axis):",
                      choices = GENOME_WIDE_TYPES,
-                     selected = "PQ_DELETION",
+                     selected = "POLQ-deletion",
                      multiple = F,
                      options = pickerOptions(
                        actionsBox = TRUE,
@@ -107,6 +107,7 @@ fluidPage(
                    pickerInput(
                      inputId = "XYY", 
                      label = "Select outcome type (y-axis):",
+                     selected = GENOME_WIDE_TYPES[4], ##HDR
                      choices = GENOME_WIDE_TYPES,
                      multiple = F,
                      options = pickerOptions(
