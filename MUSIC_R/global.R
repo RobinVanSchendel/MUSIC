@@ -129,6 +129,8 @@ genome_wide_connection = genome_wide_conn()
 if(!is.null(genome_wide_connection)){
   GENOME_WIDE_GENE_INFO <- tbl(genome_wide_connection, "countTable") %>% select(Gene, Barcode) %>%
     distinct() %>%
+    ##remove NonTargeting
+    filter(Gene != "Non-targeting") %>%
     group_by(Gene) %>%
     summarise(nrBarcodes = n()) %>% 
     collect()

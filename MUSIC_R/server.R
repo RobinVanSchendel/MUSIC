@@ -183,7 +183,10 @@ function(input, output, session) {
       req(db_con_genome_wide())
       print("update highlightGene")
       con <- db_con_genome_wide()
-      genes <- tbl(con, "barcodeCount") %>% select(Gene) %>% distinct() %>% collect() %>% pull()
+      genes <- tbl(con, "barcodeCount") %>% select(Gene) %>% distinct() %>% collect() %>% 
+        filter(Gene != "Non-targeting") %>%
+        pull()
+      
       updatePickerInput(session, inputId = "highlightGene", choices = genes)
       print("update highlightGene finished")
     }
