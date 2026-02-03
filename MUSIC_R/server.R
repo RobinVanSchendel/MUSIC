@@ -693,6 +693,18 @@ function(input, output, session) {
     createHoverTooltip(hover, df)
   })
   
+  ##hover for waterfall
+  output$hover_waterfall <- renderUI({
+    req(annotated_waterfall())
+    hover <- input$plot_waterfall
+    if(is.null(hover)){
+      return()
+    }
+    ##get the data from the reactive
+    df <- annotated_waterfall()
+    createHoverTooltip(hover, df)
+  })
+  
   ##for the hover
   output$hover_volcano <- renderUI({
     hover <- input$plot_volcano
