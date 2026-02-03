@@ -7,7 +7,7 @@ read_in_umap_gene_data <- function(){
 addLabelsUMAP <- function(base_plot, df, input){
   if(input$UMAP_gene_add_labels){
     base_plot = base_plot + geom_text_repel(data=df %>% filter(Gene != "NonTargeting"), 
-                                            aes(label = Gene), max.overlaps = 100)
+                                            aes(label = Gene), max.overlaps = 100, fontface = "bold")
   }
   base_plot
 }

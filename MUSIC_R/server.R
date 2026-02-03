@@ -243,7 +243,7 @@ function(input, output, session) {
   observeEvent(input$tabs, {
     message("input tab|",input$tabs,"|")
     ##TODO: this is probably not only for heatmap
-    if(input$tabs == "Heatmap"){
+    if(input$tabs == "Heatmap" || input$tabs == "UMAP - Gene"){
       genes = heatmap_data() %>% select(Gene) %>% distinct() %>% pull()
       updatePickerInput(session, inputId = "highlightGeneFocused", choices = genes)
     } else{
@@ -475,6 +475,13 @@ function(input, output, session) {
       geom_point()
     
     final_plot = addLabelsUMAP(base_plot, df, input)
+    
+    if(!is.null(input$highlightGeneFocused)){
+      highlight_df = df %>% filter(Gene %in% input$highlightGeneFocused)
+      final_plot <- final_plot + geom_point(data = highlight_df, color = "red", size = 5) +
+        geom_text_repel(data = highlight_df, aes(label = Gene), color = "red", size = 6)
+        
+    }
     
     #  geom_text_repel(data=subset(df, Gene != "NonTargeting"), aes(label = Gene), max.overlaps = 100)+
     final_plot = final_plot +
