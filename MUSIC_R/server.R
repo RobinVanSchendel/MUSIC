@@ -140,6 +140,20 @@ function(input, output, session) {
     output$xy_table <- renderDT(makeInteractiveTable(brushed))
   })
   
+  ##waterfall brush
+  observeEvent(input$plot_waterfall_brush, {
+    req(annotated_waterfall())
+    data = annotated_waterfall()
+    brushed <- brushedPoints(data, input$plot_waterfall_brush)
+    
+    ##only keep relevant columns
+    select_columns = c("Gene","Type","meanLFC","Pathway1", "Pathway2","RankUp","RankDown", "hit")
+    brushed = brushed %>% select(all_of(select_columns))
+    
+    output$waterfall_table <- renderDT(makeInteractiveTable(brushed))
+  })
+  
+  
   ##umap_gene brush
   observeEvent(input$plot_umap_focused_brush, {
     req(umap_gene_data())
