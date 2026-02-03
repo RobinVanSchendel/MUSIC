@@ -39,3 +39,23 @@ waterfall_sd_lines <- function(df) {
   df %>%
     distinct(Type, mean_lfc, sd_lfc)
 }
+
+##input_label will contain c("1","2), "1", "2" or nothing
+get_df_for_labels <- function(df, input_label) {
+  if (is.null(input_label)) {
+    return(NULL)
+  }
+  
+  has1 <- "1" %in% input_label
+  has2 <- "2" %in% input_label
+  
+  if (has1 && has2) {
+    df %>% dplyr::filter(hit)
+  } else if (has1) {
+    df %>% dplyr::filter(hit, assigned)
+  } else if (has2) {
+    df %>% dplyr::filter(hit, !assigned)
+  } else {
+    NULL
+  }
+}

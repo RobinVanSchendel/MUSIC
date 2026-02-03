@@ -85,7 +85,13 @@ fluidPage(
                        virtualScroll = 10,
                        size = 10
                      )
-                   )
+                   ),
+                   checkboxGroupInput(inputId = "waterfall_label",
+                                      label = "Show label(s):",
+                                      choices = c("Known pathways" = 1,
+                                                  "Unknown hits" = 2),
+                                      selected = c(1)
+                                      )
                  ),
                  
                  ##XY plot

@@ -333,25 +333,29 @@ function(input, output, session) {
         alpha = 0.8
       ) +
       
-      geom_text_repel(
-        data = df_plot %>% filter(hit, assigned),
-        aes(label = Gene, color = Pathway1),
-        show.legend = FALSE,
-        size = 8,
-        max.overlaps = Inf,
-        seed = 123,
-        force = 0.75,
-        force_pull = 5,
-        nudge_x = 0.2,
-        nudge_y = 0.2
-      ) +
-      
       scale_color_manual(values = WATERFALL_PATHWAY_COLORS) +
       facet_wrap2(~Type, strip = strip_themed(
         background_x = elem_list_rect(fill = WATERFALL_COLORS, color = "black"),
         text_x = elem_list_text(color = "white", face = "bold")
       )) +
       theme_object()
+    
+    labels = get_df_for_labels(df_plot, input$waterfall_label)
+    
+    if(!is.null(labels) >0){
+      p <- p + geom_text_repel(
+        data = labels, 
+        aes(label = Gene, color = Pathway1),
+        show.legend = FALSE,
+        size = 8,
+        max.overlaps = 30,
+        seed = 123,
+        force = 0.75,
+        force_pull = 5,
+        nudge_x = 0.2,
+        nudge_y = 0.2
+      )
+    }
     
     if(nrow(highlight) > 0){
       p <- p + geom_point(data = highlight, color = "blue", size = 4) +
