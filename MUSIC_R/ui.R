@@ -176,20 +176,43 @@ fluidPage(
                    condition = "input.tabs == 'UMAP - Gene'",
                    checkboxInput(inputId = "UMAP_gene_add_labels", label = "add Gene labels", value = T)
                  ),
-                 wellPanel(
-                   h4("Highlight Top Genes"),
-                   numericInput("highlightTop", "Highlight top N genes: ", value = 10),
-                   prettyCheckboxGroup(inputId = "highlightShow", label = "Direction of top genes to highlight:", inline = T, 
-                                      choices = c("Reduced" = "down", "Increased" = "up"), selected =  c("down","up"), status = "primary"),
+                 conditionalPanel(
+                   condition = "input.tabs == 'XY' || 
+                                input.tabs == 'Volcano' 
+                   ",
+                   wellPanel(
+                     h4("Highlight Top Genes"),
+                     numericInput("highlightTop", "Highlight top N genes: ", value = 100),
+                     prettyCheckboxGroup(inputId = "highlightShow", label = "Direction of top genes to highlight:", inline = T, 
+                                        choices = c("Reduced" = "down", "Increased" = "up"), selected =  c("down","up"), status = "primary"),
+                   ),
+                   
+                   # Section 2: Overlap Filtering (conditionally shown)
+                   wellPanel(
+                     h4("Filter by Overlap Across Experiments"),
+                     materialSwitch(inputId = "overlapping_genes_only",
+                                   label = "Enable filter:",
+                                   value = TRUE, status = "primary"),
+                     numericInput("overlapping_genes_count", "Minimum number of experiments a gene must appear in top N:", value = 4),
+                   )
                  ),
-                 
-                 # Section 2: Overlap Filtering (conditionally shown)
-                 wellPanel(
-                   h4("Filter by Overlap Across Experiments"),
-                   materialSwitch(inputId = "overlapping_genes_only",
-                                 label = "Enable filter:",
-                                 value = TRUE, status = "primary"),
-                   numericInput("overlapping_genes_count", "Minimum number of experiments a gene must appear in top N:", value = 4),
+                 conditionalPanel(
+                   condition = "input.tabs == 'Volcano '",
+                   wellPanel(
+                     h4("Highlight Top sgRNAs"),
+                     numericInput("highlightTopFocused", "Highlight top N sgRNAs: ", value = 10),
+                     prettyCheckboxGroup(inputId = "highlightShowFocused", label = "Direction of top sgRNAs to highlight:", inline = T, 
+                                         choices = c("Reduced" = "down", "Increased" = "up"), selected =  c("down","up"), status = "primary"),
+                   ),
+                   
+                   # Section 2: Overlap Filtering (conditionally shown)
+                   wellPanel(
+                     h4("Filter by Overlap Across Experiments"),
+                     materialSwitch(inputId = "overlapping_genes_only_focused",
+                                    label = "Enable filter:",
+                                    value = TRUE, status = "primary"),
+                     numericInput("overlapping_genes_count_focused", "Minimum number of replicates a sgRNA must appear in top N:", value = 3, max = 3),
+                   )
                  )
     ),
     mainPanel(

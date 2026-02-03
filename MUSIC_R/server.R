@@ -443,13 +443,13 @@ function(input, output, session) {
     
     df <- volcanofocuseddata()
     highlightPart <- getHighlightedFocusedGenes(df, input)
-    topGenes <- getTopGenesVolcano(df, input, plotType)
+    topGenes <- getTopGenesVolcanoFocused(df, input, plotType)
     
     base_plot <- ggplot(data = df, aes(y = mutEvents, x = log2fraction)) +
       geom_point() +
       NULL
     
-    final_plot <- addHighlightsAndMarginalsVolcano(
+    final_plot <- addHighlightsAndMarginalsVolcanoFocused(
       base_plot, input, highlightPart, topGenes$up, topGenes$down)
     
     final_plot = final_plot + facet_wrap(Alias ~ ., ncol = 3, labeller = as_labeller(FOCUSED_MAP)) +
