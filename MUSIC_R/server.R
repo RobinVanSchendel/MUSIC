@@ -164,7 +164,26 @@ function(input, output, session) {
     output$umap_gene_table <- renderDT(makeInteractiveTable(brushed))
   })
   
+  ##for extra information on the plots
+  tooltip <- function(){
+    div(
+      style = "display: flex; align-items: center; gap: 6px;",
+      tags$i(
+        class = "fa fa-info-circle text-primary",
+        `data-toggle` = "tooltip",
+        `data-placement` = "right",
+        title = "Hover for details • Drag and double click to zoom or select"
+      )
+    )
+  }
   
+  output$plot_header1 <- renderUI({ tooltip() })
+  output$plot_header2 <- renderUI({ tooltip() })
+  output$plot_header3 <- renderUI({ tooltip() })
+  output$plot_header4 <- renderUI({ tooltip() })
+  output$plot_header5 <- renderUI({ tooltip() })
+  output$plot_header6 <- renderUI({ tooltip() })
+  output$plot_header7 <- renderUI({ tooltip() })
   
     ##for zooming purposes
   ranges_volcano_brush <- reactiveValues(x = NULL, y = NULL)
