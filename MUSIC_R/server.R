@@ -264,6 +264,9 @@ function(input, output, session) {
     ##TODO: this is probably not only for heatmap
     if(input$tabs == "Heatmap" || input$tabs == "UMAP - Gene"){
       genes = heatmap_data() %>% select(Gene) %>% distinct() %>% pull()
+      if(input$tabs == "Heatmap"){
+        genes <- genes[genes != "NonTargeting"]
+      }
       updatePickerInput(session, inputId = "highlightGeneFocused", choices = genes)
     } else{
       req(barcode_data_focused())
