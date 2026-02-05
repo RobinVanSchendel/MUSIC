@@ -73,9 +73,21 @@ function(input, output, session) {
   output$UIUmapOutcomePlot <- renderUI({
     withSpinner(plotOutput("UmapOutcomePlot", height = input$plotHeight, width = getPlotWidth(input$plotWidth),
                            hover = hoverOpts("plot_umap_outcome_focused", delay = 10, delayType = "debounce"),
+                           brush = "plot_umap_outcome_brush",
+                           dblclick = "plot_umap_outcome_focused_dblclick"))
+  })
+  
+  output$UIUmapOutcomeDelSizePlot <- renderUI({
+    withSpinner(plotOutput("UmapOutcomeDelSizePlot", height = input$plotHeight/2, width = getPlotWidth(input$plotWidth),
+                           hover = hoverOpts("plot_umap_outcome_focused", delay = 10, delayType = "debounce"),
                            brush = "plot_umap_outcome_brush"))
   })
   
+  output$UIUmapOutcomeMHPlot <- renderUI({
+    withSpinner(plotOutput("UmapOutcomeMHPlot", height = input$plotHeight/2, width = getPlotWidth(input$plotWidth),
+                           hover = hoverOpts("plot_umap_outcome_focused", delay = 10, delayType = "debounce"),
+                           brush = "plot_umap_outcome_brush"))
+  })
   
   output$UIUmapOutcomeGeneSpecificPlot <- renderUI({
     withSpinner(plotOutput("UmapOutcomeGeneSpecificPlot", height = input$plotHeight, width = getPlotWidth(input$plotWidth)))
@@ -153,7 +165,6 @@ function(input, output, session) {
     output$waterfall_table <- renderDT(makeInteractiveTable(brushed))
   })
   
-  
   ##umap_gene brush
   observeEvent(input$plot_umap_focused_brush, {
     req(umap_gene_data())
@@ -191,6 +202,7 @@ function(input, output, session) {
   ranges_heatmap_brush <- reactiveValues(x = NULL, y = NULL)
   ranges_volcano_focused_brush <- reactiveValues(x = NULL, y = NULL)
   ranges_waterfall_brush <- reactiveValues(x = NULL, y = NULL)
+  ranges_umap_outcome_brush <- reactiveValues(x = NULL, y = NULL)
   
   
   # Zoom on double-click
@@ -209,6 +221,13 @@ function(input, output, session) {
   observeEvent(input$plot_volcano_focused_dblclick, {
     updateZoomRanges(input$plot_volcano_focused_brush, ranges_volcano_focused_brush)
   })
+  
+  #zoom for plot_volcano_focused_brush
+  observeEvent(input$plot_umap_outcome_focused_dblclick, {
+    updateZoomRanges(input$plot_umap_outcome_brush, ranges_umap_outcome_brush)
+  })
+  
+  
   
   # Zoom on double-click waterfall
   observeEvent(input$plot_waterfall_dblclick, {
@@ -374,6 +393,7 @@ function(input, output, session) {
         background_x = elem_list_rect(fill = WATERFALL_COLORS, color = "black"),
         text_x = elem_list_text(color = "white", face = "bold")
       )) +
+      labs(x = "Gene rank#", y = "Log2 fold-change") +
       theme_object()
     
     labels = get_df_for_labels(df_plot, input$waterfall_label)
@@ -455,6 +475,8 @@ function(input, output, session) {
       NULL
     
     final_plot <- final_plot + coord_cartesian(xlim = ranges_volcano_brush$x, ylim = ranges_volcano_brush$y)
+    
+    final_plot <- final_plot + labs(x = "Log2 fold-change", y = "PScore") +
     final_plot
   })
   
@@ -479,13 +501,8 @@ function(input, output, session) {
       geom_vline(xintercept = c(-0.5, 0.5), linetype = "dashed") +
       NULL
     
-    ##TODO: check brush
-    #if(!is.null(input$plot_volcano_brush)){
-    #  brush = input$plot_volcano_brush
-    #  print(brush)
-    #}
-    
-    final_plot <- final_plot + coord_cartesian(xlim = ranges_volcano_focused_brush$x, ylim = ranges_volcano_focused_brush$y)
+    final_plot <- final_plot + coord_cartesian(xlim = ranges_volcano_focused_brush$x, ylim = ranges_volcano_focused_brush$y) +
+      labs(x = "Log2 fold-change") 
     final_plot
   })
   
@@ -512,8 +529,25 @@ function(input, output, session) {
       guides(size = "none", alpha = "none")+
       theme(legend.position = "top") +
       theme_object() +
+      labs(x = "sgRNA UMAP2", y = "sgRNA UMAP1",color = "Pathway") +
       NULL
     final_plot
+  })
+  
+  
+  
+  output$UmapOutcomeDelSizePlot <- renderPlot({
+    req(umap_outcome_data())
+    message("UmapOutcomeDelSizePlot")
+    df = umap_outcome_data() 
+    top_r_plot <- ggplot(df) +
+      geom_point(aes(x = X2, y = X1, color = DelSize, fill = DelSize), size = 5, alpha = 0.6, shape = 21) +
+      scale_color_gradient(low = "grey95", high = "steelblue4", limits=c(0, 40), oob = scales::squish, na.value = "black") +
+      scale_fill_gradient(low = "grey95", high = "steelblue4", limits=c(0, 40), oob = scales::squish, na.value = "white") +
+      theme_object() +
+      coord_cartesian(xlim = ranges_umap_outcome_brush$x, ylim = ranges_umap_outcome_brush$y) +
+      NULL
+    top_r_plot
   })
   
   ##UMap outcome plot
@@ -525,33 +559,29 @@ function(input, output, session) {
     left_plot <- ggplot(df) +
       geom_point(aes(x = X2, y = X1, fill = Type), size = 5, alpha = 0.6, shape = 21) +
       scale_fill_manual(values = UMAP_OUTCOME_COLORS) +
+      scale_color_manual(values = UMAP_OUTCOME_COLORS) +
       theme_object() +
+      coord_cartesian(xlim = ranges_umap_outcome_brush$x, ylim = ranges_umap_outcome_brush$y) +
       NULL
     
-    top_r_plot <- ggplot(df) +
-      geom_point(aes(x = X2, y = X1, color = DelSize), size = 5, alpha = 0.6) +
-      scale_color_gradient(low = "grey95", high = "steelblue4", limits=c(0, 40), oob = scales::squish) +
-      theme_object() +
-      NULL
+    left_plot
+  })
+  
+  ##UMap outcome plot
+  output$UmapOutcomeMHPlot <- renderPlot({
+    req(umap_outcome_data())
+    message("UmapOutcomePlot")
+    df = umap_outcome_data()
     
     bottom_r_plot <- ggplot(df) +
-      geom_point(aes(x = X2, y = X1, color = MHDel), size = 5, alpha = 0.6) +
-      scale_color_gradient(low = "grey95", high = "maroon4", limits=c(0, 4), oob = scales::squish) +
+      geom_point(aes(x = X2, y = X1, color = MHDel, fill = MHDel), size = 5, alpha = 0.6, shape = 21) +
+      scale_color_gradient(low = "grey95", high = "maroon4", limits=c(0, 4), oob = scales::squish, na.value = "black") +
+      scale_fill_gradient(low = "grey95", high = "maroon4", limits=c(0, 4), oob = scales::squish, na.value = "white") +
       theme_object() +
+      coord_cartesian(xlim = ranges_umap_outcome_brush$x, ylim = ranges_umap_outcome_brush$y) +
       NULL
     
-    right_col <- grid.arrange(
-      top_r_plot,
-      bottom_r_plot,
-      ncol = 1
-    )
-    ##make the complete arrangement
-    grid.arrange(
-      left_plot,
-      right_col,
-      ncol = 2,
-      widths = c(2, 1)  # left plot wider
-    )
+    bottom_r_plot
   })
   
   ##reactive for umap outcome specific plot
@@ -721,6 +751,7 @@ function(input, output, session) {
           inherit.aes = F
         )
     }
+    plot <- plot + labs(x = "sgRNA", y = "Outcome")
     
     plot
   })
