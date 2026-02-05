@@ -586,7 +586,7 @@ function(input, output, session) {
     
     ggplot(final_data, aes(x = X2, y = X1, color = Pvalue)) +
       geom_point(data = final_data %>% filter(is.na(log2fraction)), aes(shape="NA"), shape = 21, size = 1.5, fill = "white", alpha = 0.3) +
-      geom_point(alpha = 0.3, shape=21, aes_string(col = "log2fraction", size = "Pvalue", fill = "log2fraction")) +
+      geom_point(alpha = 0.3, shape=21, aes_string(  size = "Pvalue", fill = "log2fraction"), color = "black") +
       scale_fill_gradient2('GeneLog2fc', na.value="white", low = "navy", mid = "grey95", high = "red", midpoint = 0, limits=c(-2, 2), oob = scales::squish)+ 
       scale_colour_gradient2('GeneLog2fc', na.value="black", low = "navy", mid = "grey95", high = "red", midpoint = 0, limits=c(-2, 2), oob = scales::squish)+ #log2fc
       scale_size_area(
@@ -600,6 +600,7 @@ function(input, output, session) {
       facet_wrap(~Gene, ncol = 3) +
       theme_object() +
       ggtitle("Umap Outcome Specific Gene(s)") +
+      coord_cartesian(xlim = ranges_umap_outcome_brush$x, ylim = ranges_umap_outcome_brush$y) +
       NULL
   })
   
