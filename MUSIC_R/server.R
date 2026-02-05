@@ -541,8 +541,8 @@ function(input, output, session) {
     message("UmapOutcomeDelSizePlot")
     df = umap_outcome_data() 
     top_r_plot <- ggplot(df) +
-      geom_point(aes(x = X2, y = X1, color = DelSize, fill = DelSize), size = 5, alpha = 0.6, shape = 21) +
-      scale_color_gradient(low = "grey95", high = "steelblue4", limits=c(0, 40), oob = scales::squish, na.value = "black") +
+      geom_point(aes(x = X2, y = X1, fill = DelSize), size = 5, alpha = 0.6, shape = 21, color = "black") +
+      #scale_color_gradient(low = "grey95", high = "steelblue4", limits=c(0, 40), oob = scales::squish, na.value = "black") +
       scale_fill_gradient(low = "grey95", high = "steelblue4", limits=c(0, 40), oob = scales::squish, na.value = "white") +
       theme_object() +
       coord_cartesian(xlim = ranges_umap_outcome_brush$x, ylim = ranges_umap_outcome_brush$y) +
@@ -574,8 +574,8 @@ function(input, output, session) {
     df = umap_outcome_data()
     
     bottom_r_plot <- ggplot(df) +
-      geom_point(aes(x = X2, y = X1, color = MHDel, fill = MHDel), size = 5, alpha = 0.6, shape = 21) +
-      scale_color_gradient(low = "grey95", high = "maroon4", limits=c(0, 4), oob = scales::squish, na.value = "black") +
+      geom_point(aes(x = X2, y = X1, fill = MHDel), size = 5, alpha = 0.6, shape = 21, color = "black") +
+      #scale_color_gradient(low = "grey95", high = "maroon4", limits=c(0, 4), oob = scales::squish, na.value = "black") +
       scale_fill_gradient(low = "grey95", high = "maroon4", limits=c(0, 4), oob = scales::squish, na.value = "white") +
       theme_object() +
       coord_cartesian(xlim = ranges_umap_outcome_brush$x, ylim = ranges_umap_outcome_brush$y) +
