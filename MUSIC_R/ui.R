@@ -202,7 +202,7 @@ fluidPage(
                      h4("Highlight Top sgRNAs"),
                      numericInput("highlightTopFocused", "Highlight top N sgRNAs: ", value = 10),
                      prettyCheckboxGroup(inputId = "highlightShowFocused", label = "Direction of top sgRNAs to highlight:", inline = T, 
-                                         choices = c("Reduced" = "down", "Increased" = "up"), selected =  c("down","up"), status = "primary"),
+                                         choices = c("Reduced" = "DOWN", "Increased" = "UP"), selected =  c("DOWN","UP"), status = "primary"),
                    ),
                    
                    # Section 2: Overlap Filtering (conditionally shown)

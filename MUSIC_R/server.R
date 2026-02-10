@@ -460,7 +460,9 @@ function(input, output, session) {
       return()
     }
     highlightPart <- getHighlightedGenes(df, input)
+    PValueLimit = 7.5 ##getPScoreFromPValue(df) hard-coded here
     topGenes <- getTopGenesVolcano(df, input, plotType)
+    
     
     base_plot <- ggplot(data = df, aes(y = Pvalue, x = log2fraction)) +
       geom_point() +
@@ -472,6 +474,7 @@ function(input, output, session) {
     final_plot = final_plot + facet_wrap(Alias ~ ., ncol = 2, labeller = as_labeller(GENOME_WIDE_LABEL_MAP)) +
       theme_object() +
       geom_vline(xintercept = c(-0.5, 0.5), linetype = "dashed") +
+      geom_hline(yintercept = PValueLimit, linetype = "dashed") +
       NULL
     
     final_plot <- final_plot + coord_cartesian(xlim = ranges_volcano_brush$x, ylim = ranges_volcano_brush$y)
@@ -487,18 +490,36 @@ function(input, output, session) {
     
     df <- volcanofocuseddata()
     highlightPart <- getHighlightedFocusedGenes(df, input)
-    topGenes <- getTopGenesVolcanoFocused(df, input, plotType)
+    
+    highlightTop = input$highlightTopFocused
+    overlapping_barcodes_only = input$overlapping_genes_only_focused
+    overlapping_barcodes_count = input$overlapping_genes_count_focused
+    plotX = "log2fraction"
+    pvalue_col = "Pvalue"
+    outcome_col = "outcomeTop"
+    ##get a name here
+    direction_filter = getDirectionFilter(input$highlightShowFocused)
+    topGenes <- getTopGenesVolcanoFocused(df, highlightTop = highlightTop, 
+                                          overlapping_barcodes_only = overlapping_barcodes_only,
+                                          overlapping_barcodes_count = overlapping_barcodes_count,
+                                          plotX = plotX,
+                                          pvalue_col = pvalue_col,
+                                          outcome_col = outcome_col,
+                                          direction_filter = direction_filter)
+    
+    foldRates <- getFoldRatesOutcome(df)
     
     base_plot <- ggplot(data = df, aes(y = mutEvents, x = log2fraction)) +
       geom_point() +
       NULL
     
     final_plot <- addHighlightsAndMarginalsVolcanoFocused(
-      base_plot, input, highlightPart, topGenes$up, topGenes$down)
+      base_plot, input, highlightPart, topGenes)
     
     final_plot = final_plot + facet_wrap(Alias ~ ., ncol = 3, labeller = as_labeller(FOCUSED_MAP)) +
       theme_object() +
-      geom_vline(xintercept = c(-0.5, 0.5), linetype = "dashed") +
+      geom_vline(data = foldRates, aes(xintercept = foldRate1), linetype = "dashed") +
+      geom_vline(data = foldRates, aes(xintercept = foldRate2), linetype = "dashed") +
       NULL
     
     final_plot <- final_plot + coord_cartesian(xlim = ranges_volcano_focused_brush$x, ylim = ranges_volcano_focused_brush$y) +

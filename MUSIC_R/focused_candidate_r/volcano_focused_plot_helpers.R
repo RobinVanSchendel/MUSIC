@@ -10,24 +10,7 @@ getHighlightedFocusedGenes <- function(df, input) {
   df %>% filter(Gene %in% input$highlightGeneFocused)
 }
 
-getTopGenesVolcanoFocused <- function(df, input, plotX) {
-  ##at the moment on log2fraction
-  dfTop <- df %>% group_by(Alias) %>% slice_max(order_by = log2fraction, n = input$highlightTopFocused)
-  dfTopLow <- df %>% group_by(Alias) %>% slice_min(order_by = log2fraction, n = input$highlightTopFocused)
-  
-  if (input$overlapping_genes_only_focused) {
-    ##misnomer, this is about Barcodes
-    dfTopOverlap <- dfTop %>% group_by(Barcode) %>% count() %>% filter(n >= input$overlapping_genes_count_focused)
-    dfTop <- dfTop %>% filter(Barcode %in% dfTopOverlap$Barcode)
-    
-    dfTopLowOverlap <- dfTopLow %>% group_by(Barcode) %>% count() %>% filter(n >= input$overlapping_genes_count_focused)
-    dfTopLow <- dfTopLow %>% filter(Barcode %in% dfTopLowOverlap$Barcode)
-  }
-  
-  list(up = dfTop, down = dfTopLow)
-}
-
-addHighlightsAndMarginalsVolcanoFocused <- function(plot, input, highlightPart, dfTop, dfTopLow) {
+addHighlightsAndMarginalsVolcanoFocused <- function(plot, input, highlightPart, dfTop) {
   if (!is.null(highlightPart) && nrow(highlightPart) > 0) {
     plot <- plot +
       geom_text_repel(data = highlightPart, aes(label = Gene), color = "blue", min.segment.length = unit(0, 'lines')) +
@@ -35,16 +18,25 @@ addHighlightsAndMarginalsVolcanoFocused <- function(plot, input, highlightPart, 
   }
   
   if (input$highlightTop > 0) {
-    if ("up" %in% input$highlightShowFocused) {
-      plot <- plot +
-        geom_point(data = dfTop, color = "red", size = 2) +
-        geom_text_repel(data = dfTop, aes(label = Gene), color = "red", min.segment.length = unit(0, 'lines'), max.overlaps = Inf)
-    }
-    if ("down" %in% input$highlightShowFocused) {
-      plot <- plot +
-        geom_point(data = dfTopLow, color = "red", size = 2) +
-        geom_text_repel(data = dfTopLow, aes(label = Gene), color = "red", min.segment.length = unit(0, 'lines'), max.overlaps = Inf)
-    }
+    plot <- plot +
+      geom_point(data = dfTop, color = "red", size = 2) +
+      geom_text_repel(data = dfTop, aes(label = Gene), color = "red", min.segment.length = unit(0, 'lines'), max.overlaps = Inf)
   }
   plot
+}
+
+getDirectionFilter <- function(selected) {
+  # Normalize to uppercase for consistency
+  selected <- toupper(selected)
+  
+  if(all(c("UP","DOWN") %in% selected)) {
+    return("ALL")
+  } else if("UP" %in% selected) {
+    return("UP")
+  } else if("DOWN" %in% selected) {
+    return("DOWN")
+  } else {
+    # Default fallback if nothing is selected
+    return("ALL")
+  }
 }

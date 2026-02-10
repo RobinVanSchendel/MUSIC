@@ -25,6 +25,7 @@ source("functions/theme_helpers.R")
 source("functions/zoom.R")
 source("functions/render_table.R")
 source("functions/plot_helpers.R")
+source("functions/data_helpers.R")
 
 source("genome_wide_r/xy_plot_helpers.R")
 source("genome_wide_r/gene_barcode.R")
