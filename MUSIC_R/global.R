@@ -52,6 +52,10 @@ GENOME_WIDE_TYPES = c( "Insertion (1bp)","Deletion (≥15bp)",
                        "Delins","Homology-directed repair",
                        "POLQ-deletion" ,"Templated insertions")
 
+UMAP_GENE_DATA     <- read_in_umap_gene_data()
+HEATMAP_DATA       <- read_in_heatmap_data()
+UMAP_OUTCOME_DATA  <- read_in_umap_outcome_data()
+
 ##ensure the waterfall types are coloured
 WATERFALL_COLORS = setNames(c(
   "#FF8C00", "#124E8B","#05878C","#EC71A7", "#B03060", "#E6332A"),
@@ -136,6 +140,7 @@ if(!is.null(genome_wide_connection)){
     group_by(Gene) %>%
     summarise(nrBarcodes = n()) %>% 
     collect()
+  dbDisconnect(genome_wide_connection)
 } else{
   GENOME_WIDE_GENE_INFO = NULL
 }
@@ -145,8 +150,6 @@ candidate_connection = candidate_conn()
 if(!is.null(candidate_connection)){
   FOCUSED_GENE_INFO <- tbl(candidate_connection, "countTable") %>% select(Gene, Barcode) %>%
     distinct() %>%
-    group_by(Gene) %>%
-    summarise(nrBarcodes = n()) %>% 
     collect()
   
   FOCUSED_OUTCOMES_MEAN <- tbl(candidate_connection, "outcomes") %>% 
@@ -155,7 +158,9 @@ if(!is.null(candidate_connection)){
     group_by(outcomeTop) %>%
     summarise(mean = mean(mean)) %>%
     arrange(desc(mean)) %>%
-    collect() 
+    collect()
+  
+  dbDisconnect(candidate_connection)
   
   FOCUSED_OUTCOMES = setNames(FOCUSED_OUTCOMES_MEAN$outcomeTop, 
                               paste(FOCUSED_OUTCOMES_MEAN$outcomeTop, round(FOCUSED_OUTCOMES_MEAN$mean, 5)))

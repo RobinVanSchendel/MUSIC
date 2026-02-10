@@ -1,5 +1,9 @@
 function(input, output, session) {
   
+  
+  genome_wide_con <- genome_wide_conn()
+  candidate_con   <- candidate_conn()
+  
   # Render dynamic tabs based on input
   output$dynamicTabs <- renderUI({
     generateTabs(input$data_input)
@@ -10,18 +14,10 @@ function(input, output, session) {
   volcanofocuseddata <- reactiveVal()
   xydata <- reactiveVal()
   annotated_waterfall <- reactiveVal()
-  umap_gene_data <- reactiveVal()
-  umap_outcome_data <- reactiveVal()
-  heatmap_data <- reactiveVal()
+  umap_gene_data <- reactiveVal(UMAP_GENE_DATA)
+  heatmap_data  <- reactiveVal(HEATMAP_DATA)
+  umap_outcome_data <- reactiveVal(UMAP_OUTCOME_DATA)
   barcode_data_focused <- reactiveVal()
-  
-  # Reactive database connection
-  db_con_genome_wide <- reactive({
-    return(genome_wide_conn())
-  })
-  db_con_candidate <- reactive({
-    return(candidate_conn())
-  })
   
   # Render gene barcode table
   output$gene_barcode <- DT::renderDataTable({
@@ -116,7 +112,7 @@ function(input, output, session) {
   
   ##xy data
   observeEvent(list(input$XYX, input$XYY),{
-    con <- db_con_genome_wide()
+    con <- genome_wide_con
     plotX <- input$XYX
     plotY <- input$XYY
     
@@ -243,9 +239,8 @@ function(input, output, session) {
   # Update picker input for gene highlighting
   observeEvent(input$data_input, {
     if(input$data_input == 1){
-      req(db_con_genome_wide())
       print("update highlightGene")
-      con <- db_con_genome_wide()
+      con <- genome_wide_con
       genes <- tbl(con, "barcodeCount") %>% select(Gene) %>% distinct() %>% collect() %>% 
         filter(Gene != "Non-targeting") %>%
         pull()
@@ -254,9 +249,8 @@ function(input, output, session) {
       print("update highlightGene finished")
     }
     else if(input$data_input == 2){
-      req(db_con_candidate())
       print("update highlightGene")
-      con <- db_con_candidate()
+      con <- candidate_con
       genes <- tbl(con, "barcodeCount") %>% select(Gene) %>% distinct() %>% collect() %>% pull()
       updatePickerInput(session, inputId = "highlightGeneFocused", choices = genes)
       ##get all barcode info in barcode_data_focused
@@ -267,9 +261,9 @@ function(input, output, session) {
   })
   
   observeEvent(input$VolcanoType, {
-      req(db_con_genome_wide(), input$tabs)
+      req(input$tabs)
       message("tabs found is:", input$tabs)
-      con <- db_con_genome_wide()
+      con <- genome_wide_con
       ##make this data static
       message("prepareVolcanoData Type:",input$VolcanoType)
       volcano_data <- prepareVolcanoData(con, input$VolcanoType)
@@ -298,13 +292,13 @@ function(input, output, session) {
   ##Only happens the first time
   ##Likely need to index the DB table, because it is very slow
   observeEvent(input$tabs, {
-    req(db_con_genome_wide(),input$VolcanoType)
+    req(input$VolcanoType)
     if(input$tabs != "Volcano"){
       return()
     }
     ##do we need to load volcanodata?
     if(is.null(volcanodata())){
-      con <- db_con_genome_wide()
+      con <- genome_wide_con
       message("prepareVolcanoData genome wide first attempt:",input$VolcanoType)
       volcano_data <- prepareVolcanoData(con, input$VolcanoType)
       message("got prepareVolcanoData")
@@ -314,31 +308,12 @@ function(input, output, session) {
   })
   
   observeEvent(input$VolcanoFocusedType, {
-    req(db_con_candidate())
-    con <- db_con_candidate()
+    con <- candidate_con
     message("prepareVolcanoFocusedData: ", input$VolcanoFocusedType)
     ##make this data staic
     volcano_focused_data <- prepareVolcanoFocusedData(con, input$VolcanoFocusedType)
     volcanofocuseddata(volcano_focused_data)
     message("prepareVolcanoFocusedData done")
-  })
-  
-  observe({
-    if(is.null(umap_gene_data())){
-      message("Reading in umap_gene_data")
-      umap_data = read_in_umap_gene_data()
-      umap_gene_data(umap_data)
-    }
-    if(is.null(heatmap_data())){
-      message("Reading in heatmap_data")
-      heatmap_df = read_in_heatmap_data()
-      heatmap_data(heatmap_df)
-    }
-    if(is.null(umap_outcome_data())){
-      message("Reading in umap_outcome_data")
-      outcome_df = read_in_umap_outcome_data()
-      umap_outcome_data(outcome_df)
-    }
   })
   
   output$Waterfallplot <- renderPlot({
@@ -844,5 +819,14 @@ function(input, output, session) {
   # Optional: observe tab selection
   observeEvent(input$tabs, {
     message(input$tabs," selected")
+  })
+  
+  session$onSessionEnded(function() {
+    if (!is.null(genome_wide_con)) {
+      DBI::dbDisconnect(genome_wide_con)
+    }
+    if (!is.null(candidate_con)) {
+      DBI::dbDisconnect(candidate_con)
+    }
   })
 }
