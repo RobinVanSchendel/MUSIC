@@ -476,7 +476,7 @@ function(input, output, session) {
     
     final_plot <- final_plot + coord_cartesian(xlim = ranges_volcano_brush$x, ylim = ranges_volcano_brush$y)
     
-    final_plot <- final_plot + labs(x = "Log2 fold-change", y = "PScore") +
+    final_plot <- final_plot + labs(x = "Log2 fold-change", y = "PScore")
     final_plot
   })
   
@@ -788,6 +788,16 @@ function(input, output, session) {
     }
     df <- volcanodata()
     createHoverTooltip(hover, df)
+  })
+  
+  ##UMAP Outcome
+  output$hover_umap_outcome <- renderUI({
+    hover <- input$plot_umap_outcome_focused
+    if(is.null(hover)){
+      return()
+    }
+    df <- umap_outcome_data()
+    createHoverTooltip(hover, df, display_cols = c("Outcome","Type","MHDel","DelSize"))
   })
   
   output$hover_volcano_focused <- renderUI({
