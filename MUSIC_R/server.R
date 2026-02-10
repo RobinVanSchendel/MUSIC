@@ -393,7 +393,7 @@ function(input, output, session) {
         background_x = elem_list_rect(fill = WATERFALL_COLORS, color = "black"),
         text_x = elem_list_text(color = "white", face = "bold")
       )) +
-      labs(x = "Gene rank#", y = "Log2 fold-change") +
+      labs(x = "Gene rank#", y = "Log2 fold-change", color = "Pathway") +
       theme_object()
     
     labels = get_df_for_labels(df_plot, input$waterfall_label)
