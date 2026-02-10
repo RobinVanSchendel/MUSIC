@@ -108,16 +108,9 @@ getTopGenesVolcanoFocused <- function(df,
   # Combine up and down hits
   df_out <- bind_rows(dfTop, dfTopLow) %>% ungroup()
   
-  # Assign direction and filter by overlapping genes + direction
+  # Assign direction
   if(nrow(df_out) > 0) {
-    df_keep <- df_out %>%
-      mutate(direction = ifelse(.data[[plotX]] > 0, "UP", "DOWN")) %>%
-      group_by(Barcode, .data[[outcome_col]], direction) %>%
-      dplyr::count() %>%
-      filter(n >= overlapping_barcodes_count)
-    
     df_out <- df_out %>%
-      filter(Barcode %in% df_keep$Barcode) %>%
       mutate(direction = ifelse(.data[[plotX]] > 0, "UP", "DOWN")) %>%
       ungroup()
   }
