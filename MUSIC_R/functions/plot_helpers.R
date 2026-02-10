@@ -64,3 +64,12 @@ createHoverTooltip <- function(
     p(HTML(paste(lines, collapse = "")))
   )
 }
+
+##simple function to determine the width of a plot
+getPlotWidth <- function(width_input) {
+  if (is.null(width_input) || width_input == 0) {
+    return("100%")
+  } else {
+    return(width_input)
+  }
+}

@@ -163,15 +163,3 @@ if(!is.null(candidate_connection)){
   FOCUSED_GENE_INFO = NULL
   FOCUSED_TYPES = NULL
 }
-
-getPlotWidth <- function(width_input) {
-  if (is.null(width_input) || width_input == 0) {
-    return("100%")
-  } else {
-    return(width_input)
-  }
-}
-
-
-
-
