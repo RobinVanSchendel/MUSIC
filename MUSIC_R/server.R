@@ -586,13 +586,12 @@ function(input, output, session) {
     req(input$tabs == "UMAP - Outcome")
     req(
       umap_outcome_data(),
-      db_con_candidate(),
       input$highlightGeneFocused
     )
     
     message("retrieving data for umap_gene_specific")
     hm_data <- read_in_umap_gene_specific_data(
-      db_con_candidate(),
+      candidate_con,
       input$highlightGeneFocused
     )
     message("retrieved data for umap_gene_specific ", nrow(hm_data))
