@@ -31,7 +31,7 @@ generateTabs <- function(data_input) {
       
       tabPanel(
         "Waterfall",
-        h3("Aggregated P-score for each gene for various outcomes"),
+        h3("Mean log2 fold-change for each gene for various mutational types"),
         uiOutput("plot_header1"),
         uiOutput("UIWaterfall"),
         uiOutput("hover_waterfall"),
