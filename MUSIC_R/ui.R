@@ -1,6 +1,9 @@
 # ui.R
+# Get the server name from the system
+server_name <- Sys.info()["nodename"]
+
 fluidPage(
-  titlePanel("MUSIC app - Version 1.0"),
+  titlePanel(paste("MUSIC app - Version 1.0 - ", server_name)),
   sidebarLayout(
     sidebarPanel(
                  radioButtons("data_input", "Select MUSIC data set:",

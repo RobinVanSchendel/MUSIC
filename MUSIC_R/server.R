@@ -650,7 +650,7 @@ function(input, output, session) {
     long_df = retrieve_long_format_sorted_by_heatmap(matrix)
     
     ##get the replicat information in as well
-    replicate_info = heatmap %>% select(Outcome, Alias) %>% distinct() %>%
+    replicate_info = heatmap %>% select(Outcome, Alias, mean) %>% distinct() %>%
       mutate(Outcome_Alias = paste(Outcome, Alias))
     replicate_info = dplyr::left_join(long_df %>% select(Outcome_Alias, y_num) %>% distinct(), replicate_info, by = "Outcome_Alias") %>%
       select(Alias, y_num) %>%

@@ -39,8 +39,20 @@ source("focused_candidate_r/plot_dna_event.R")
 source("focused_candidate_r/umap_outcome_plot_helpers.R")
 
 
-GENOME_WIDE_DB = "Z:/Marco/Temp/Backup D/Temp/MBdata/Processed_Again/MBCrisprMBAgain_1_1.db" ##still change
-CANDIDATE_DB = "Z:/Marco/CustomClonedLibrary/oPools seq files/MBCrisprMBSubscreeen_Full_1MHfSNVtop150.db"   # new, test if same output as originalis a
+sys_name <- Sys.info()[["sysname"]]
+##development currently on Windows, deployment on Linux
+
+if (sys_name == "Windows") {
+  cfg <- config::get(file = "config.yml", config = "default")
+} else if (sys_name == "Linux") {
+  cfg <- config::get(file = "config.yml", config = "production")
+} else {
+  stop("Unknown server. Cannot set database paths.")
+}
+
+# Assign variables from the config
+GENOME_WIDE_DB <- cfg$genome_wide_db
+CANDIDATE_DB   <- cfg$candidate_db
 
 UMAP_GENE_FILE = "data/dfTest.txt"
 UMAP_OUTCOME_FILE = "data/outcomeUmapcoordinates.txt"
@@ -168,4 +180,5 @@ if(!is.null(candidate_connection)){
 } else{
   FOCUSED_GENE_INFO = NULL
   FOCUSED_TYPES = NULL
+  FOCUSED_OUTCOMES = NULL
 }
