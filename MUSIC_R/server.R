@@ -62,7 +62,8 @@ function(input, output, session) {
   output$UIUmapPlot <- renderUI({
     withSpinner(plotOutput("UmapPlot", height = input$plotHeight, width = getPlotWidth(input$plotWidth),
                            hover = hoverOpts("plot_umap_focused", delay = 10, delayType = "debounce"),
-                           brush = "plot_umap_focused_brush"))
+                           brush = brushOpts(id = "plot_umap_focused_brush", resetOnNew = T),
+                           dblclick = "plot_umap_focused_dblclick"))
   })
   
   ##umap-outcome plot
@@ -199,6 +200,7 @@ function(input, output, session) {
   ranges_volcano_focused_brush <- reactiveValues(x = NULL, y = NULL)
   ranges_waterfall_brush <- reactiveValues(x = NULL, y = NULL)
   ranges_umap_outcome_brush <- reactiveValues(x = NULL, y = NULL)
+  ranges_umap_focused_brush <- reactiveValues(x = NULL, y = NULL)
   
   
   # Zoom on double-click
@@ -221,6 +223,10 @@ function(input, output, session) {
   #zoom for plot_volcano_focused_brush
   observeEvent(input$plot_umap_outcome_focused_dblclick, {
     updateZoomRanges(input$plot_umap_outcome_brush, ranges_umap_outcome_brush)
+  })
+  
+  observeEvent(input$plot_umap_focused_dblclick, {
+    updateZoomRanges(input$plot_umap_focused_brush, ranges_umap_focused_brush)
   })
   
   
@@ -526,6 +532,9 @@ function(input, output, session) {
       theme(legend.position = "top") +
       theme_object() +
       labs(x = "sgRNA UMAP2", y = "sgRNA UMAP1",color = "Pathway") +
+      scale_x_continuous(limits = ranges_umap_focused_brush$x) +
+      scale_y_continuous(limits = ranges_umap_focused_brush$y) +
+      #coord_cartesian(xlim = ranges_umap_focused_brush$x, ylim = ranges_umap_focused_brush$y) +
       NULL
     final_plot
   })
