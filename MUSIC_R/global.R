@@ -54,7 +54,7 @@ if (sys_name == "Windows") {
 GENOME_WIDE_DB <- cfg$genome_wide_db
 CANDIDATE_DB   <- cfg$candidate_db
 
-UMAP_GENE_FILE = "data/dfTest.txt"
+UMAP_GENE_FILE = "data/dfGene.txt"
 UMAP_OUTCOME_FILE = "data/outcomeUmapcoordinates.txt"
 HEATMAP_FILE = "data/20240930-145847_ForUMAP_testNT.txt"
 WATERFALL_FILE = "data/TableS1_Genome-wide_MUSIC.txt"
