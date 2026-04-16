@@ -1,0 +1,7 @@
+default:
+  genome_wide_db: "E:/MBCrisprMBAgain_1_1.db"
+  candidate_db: "Z:/Marco/CustomClonedLibrary/oPools seq files/MBCrisprMBSubscreeen_Full_1MHfSNVtop150.db"
+
+production:
+  genome_wide_db: "/srv/shiny-server/data/MBCrisprMBAgain_1_1.db"
+  candidate_db: "/srv/shiny-server/data/MBCrisprMBSubscreeen_Full_1MHfSNVtop150.db"
